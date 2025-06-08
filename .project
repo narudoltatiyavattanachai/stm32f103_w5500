@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>w5500_micro_ros</name>
+	<name>stm32f103_w5500</name>
 	<comment></comment>
 	<projects>
 	</projects>

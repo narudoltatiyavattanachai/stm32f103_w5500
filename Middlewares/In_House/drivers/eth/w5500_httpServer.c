@@ -21,28 +21,28 @@
 #define HTTP_DEBUG(...) /* Not defined */
 #endif
 
-/* Configuration constants if not defined in ip_config.h */
-#ifndef IP_CONFIG_HTTP_BUF_SIZE
-#define IP_CONFIG_HTTP_BUF_SIZE   2048  /**< Default HTTP buffer size */
+/* Configuration constants if not defined in eth_config.h */
+#ifndef ETH_HTTP_BUF_SIZE
+#define ETH_HTTP_BUF_SIZE   2048  /**< Default HTTP buffer size */
 #endif
 
-#ifndef IP_CONFIG_HTTP_PORT
-#define IP_CONFIG_HTTP_PORT       80    /**< Default HTTP port */
+#ifndef ETH_HTTP_PORT
+#define ETH_HTTP_PORT   80  /**< Default HTTP server port */
 #endif
 
-#ifndef IP_CONFIG_HTTP_MAX_SOCKETS
-#define IP_CONFIG_HTTP_MAX_SOCKETS  2   /**< Default max HTTP sockets */
+#ifndef ETH_HTTP_MAX_SOCKETS
+#define ETH_HTTP_MAX_SOCKETS 4  /**< Maximum concurrent HTTP connections */
 #endif
 
-#ifndef IP_CONFIG_HTTP_TIMEOUT
-#define IP_CONFIG_HTTP_TIMEOUT    10    /**< Default HTTP timeout in seconds */
+#ifndef ETH_HTTP_TIMEOUT
+#define ETH_HTTP_TIMEOUT    10    /**< Default HTTP timeout in seconds */
 #endif
 
 /* Private variables ---------------------------------------------------------*/
 static bool http_server_initialized = false;     /* Initialization flag */
 static uint8_t http_socket_list[_WIZCHIP_SOCK_NUM_]; /* List of sockets for HTTP */
-static uint8_t http_max_sockets = IP_CONFIG_HTTP_MAX_SOCKETS; /* Max sockets for HTTP */
-static uint16_t http_server_port = IP_CONFIG_HTTP_PORT; /* HTTP server port */
+static uint8_t http_max_sockets = ETH_HTTP_MAX_SOCKETS; /* Max sockets for HTTP */
+static uint16_t http_server_port = ETH_HTTP_PORT; /* HTTP server port */
 
 /* HTTP buffer allocation */
 static uint8_t *http_tx_buf = NULL;
@@ -72,14 +72,14 @@ bool w5500_httpServer_init(void)
     http_server_config_t default_config;
     
     /* Create default configuration */
-    default_config.port = IP_CONFIG_HTTP_PORT;
-    default_config.max_sockets = IP_CONFIG_HTTP_MAX_SOCKETS;
-    default_config.timeout = IP_CONFIG_HTTP_TIMEOUT;
+    default_config.port = ETH_HTTP_PORT;
+    default_config.max_sockets = ETH_HTTP_MAX_SOCKETS;
+    default_config.timeout = ETH_HTTP_TIMEOUT;
     
     /* Allocate memory for HTTP buffers if not already allocated */
     if (http_tx_buf == NULL && http_rx_buf == NULL) {
-        http_tx_buf = (uint8_t*)malloc(IP_CONFIG_HTTP_BUF_SIZE);
-        http_rx_buf = (uint8_t*)malloc(IP_CONFIG_HTTP_BUF_SIZE);
+        http_tx_buf = (uint8_t*)malloc(ETH_HTTP_BUF_SIZE);
+        http_rx_buf = (uint8_t*)malloc(ETH_HTTP_BUF_SIZE);
         
         if (http_tx_buf == NULL || http_rx_buf == NULL) {
             HTTP_DEBUG("[HTTP] Failed to allocate buffers\r\n");

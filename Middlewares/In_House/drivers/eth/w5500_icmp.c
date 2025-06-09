@@ -37,18 +37,18 @@ typedef struct {
     uint32_t max_time_ms;   /* Maximum round-trip time in ms */
 } ping_stats_t;
 
-/* Configuration constants if not defined in ip_config.h */
-#ifndef IP_CONFIG_ICMP_SOCKET
-#define IP_CONFIG_ICMP_SOCKET     1  /**< Default socket for ICMP */
+/* Configuration constants if not defined in eth_config.h */
+#ifndef ETH_CONFIG_ICMP_SOCKET
+#define ETH_CONFIG_ICMP_SOCKET     1  /**< Default socket for ICMP */
 #endif
 
-#ifndef IP_CONFIG_PING_BUF_SIZE
-#define IP_CONFIG_PING_BUF_SIZE   64   /**< Buffer size for ICMP packets */
+#ifndef ETH_CONFIG_PING_BUF_SIZE
+#define ETH_CONFIG_PING_BUF_SIZE   64   /**< Buffer size for ICMP packets */
 #endif
 
 /* Private variables ---------------------------------------------------------*/
-static uint8_t icmp_socket = IP_CONFIG_ICMP_SOCKET;  /* Socket for ICMP operations */
-static uint8_t ping_buffer[IP_CONFIG_PING_BUF_SIZE]; /* Buffer for ping packets */
+static uint8_t icmp_socket = ETH_CONFIG_ICMP_SOCKET;  /* Socket for ICMP operations */
+static uint8_t ping_buffer[ETH_CONFIG_PING_BUF_SIZE]; /* Buffer for ping packets */
 static ping_stats_t ping_stats = {0};        /* Ping statistics */
 static bool icmp_initialized = false;        /* Initialization flag */
 

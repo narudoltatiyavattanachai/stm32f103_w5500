@@ -6,7 +6,7 @@
  *          network configuration parameters (IP, subnet, gateway, DNS). It uses
  *          the W5500 socket API for all network operations.
  * 
- * @see     ip_config.h for network and socket configuration parameters
+ * @see     eth_config.h for network and socket configuration parameters
  */
 
 #ifndef _W5500_DHCP_H_
@@ -14,44 +14,44 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "ip_config.h"
+#include "eth_config.h"
 
-/* Using centralized IP status type from ip_config.h */
+/* Using centralized ETH status type from eth_config.h */
 
 /*============================================================================*/
 /** @section DHCP CLIENT SERVICE (Socket 0)
  *  @brief DHCP initialization, periodic handler, and IP assignment
  *  @details All DHCP-related logic and state management for dynamic IP
- *           assignment. Socket defined by IP_CONFIG_DHCP_SOCKET.
+ *           assignment. Socket defined by ETH_CONFIG_DHCP_SOCKET.
  *============================================================================*/
 
 /**
- * @brief Initialize network interface using parameters from ip_config.h
+ * @brief Initialize network interface using parameters from eth_config.h
  * @return true if successful, false otherwise
  */
 bool w5500_network_init(void);
 
 /**
- * @brief Initialize DHCP client process using parameters from ip_config.h
+ * @brief Initialize DHCP client process using parameters from eth_config.h
  * @return true if successful, false otherwise
  */
 bool w5500_dhcp_init(void);
 
 /**
  * @brief Register callbacks for IP assignment events
- * @param ip_assigned Callback function for successful IP assignment
- * @param ip_changed Callback function for IP address change
- * @param ip_conflict Callback function for IP address conflict
+ * @param eth_assigned Callback function for successful IP assignment
+ * @param eth_changed Callback function for IP address change
+ * @param eth_conflict Callback function for IP address conflict
  */
-void w5500_register_ip_callbacks(void(*ip_assigned)(void), 
-                               void(*ip_changed)(void), 
-                               void(*ip_conflict)(void));
+void w5500_register_ip_callbacks(void(*eth_assigned)(void), 
+                               void(*eth_changed)(void), 
+                               void(*eth_conflict)(void));
 
 /**
  * @brief Process DHCP client tasks, should be called periodically
- * @return Current IP assignment status
+ * @return Current ETH assignment status
  */
-ip_status_t w5500_dhcp_process(void);
+eth_status_t w5500_dhcp_process(void);
 
 /**
  * @brief Check if an IP address is assigned

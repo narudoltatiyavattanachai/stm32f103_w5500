@@ -11,7 +11,7 @@
  *          implementations (ICMP, DNS, DHCP, HTTP, etc.) should use for network
  *          communication.
  * 
- * @see     ip_config.h for network and socket configuration parameters
+ * @see     eth_config.h for network and socket configuration parameters
  */
 
 #ifndef _W5500_SOCKET_H_
@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "ip_config.h"
+#include "eth_config.h"
 
 /*============================================================================*/
 /** @section GENERIC NETWORK INFORMATION

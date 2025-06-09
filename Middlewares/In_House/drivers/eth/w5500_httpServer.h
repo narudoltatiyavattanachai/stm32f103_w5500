@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "ip_config.h"
+#include "eth_config.h"
 
 /*============================================================================*/
 /** @section HTTP SERVER SERVICE

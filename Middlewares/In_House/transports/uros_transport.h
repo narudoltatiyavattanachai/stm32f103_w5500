@@ -11,7 +11,7 @@
  *          the micro-ROS agent and uses the custom transport API from micro-ROS.
  * 
  * @see     uros_socket.h for socket wrapper functions
- * @see     ip_config.h for micro-ROS and network configuration parameters
+ * @see     eth_config.h for micro-ROS and network configuration parameters
  */
 
 #ifndef _UROS_TRANSPORT_H_

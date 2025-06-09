@@ -21,18 +21,18 @@
 #define TFTP_DEBUG(...) /* Not defined */
 #endif
 
-/* Configuration constants if not defined in ip_config.h */
-#ifndef IP_CONFIG_TFTP_SOCKET
-#define IP_CONFIG_TFTP_SOCKET     3  /**< Default socket for TFTP */
+/* Configuration constants if not defined in eth_config.h */
+#ifndef ETH_TFTP_SOCKET
+#define ETH_TFTP_SOCKET     3  /**< Default socket for TFTP */
 #endif
 
-#ifndef IP_CONFIG_TFTP_BUF_SIZE
-#define IP_CONFIG_TFTP_BUF_SIZE   1024  /**< Default TFTP buffer size */
+#ifndef ETH_TFTP_BUF_SIZE
+#define ETH_TFTP_BUF_SIZE   1024  /**< Default TFTP buffer size */
 #endif
 
 /* Private variables ---------------------------------------------------------*/
-static uint8_t tftp_socket = IP_CONFIG_TFTP_SOCKET;  /* Socket for TFTP operations */
-static uint8_t tftp_buffer[IP_CONFIG_TFTP_BUF_SIZE]; /* Buffer for TFTP transfers */
+static uint8_t tftp_socket = ETH_TFTP_SOCKET;  /* Socket for TFTP operations */
+static uint8_t tftp_buffer[ETH_TFTP_BUF_SIZE]; /* Buffer for TFTP transfers */
 static bool tftp_initialized = false;                /* Initialization flag */
 static tftp_status_t tftp_current_status = TFTP_STATUS_PROGRESS;  /* Current transfer status */
 
@@ -75,7 +75,7 @@ bool w5500_tftp_init(void)
     TFTP_init(tftp_socket, tftp_buffer);
     
     TFTP_DEBUG("[TFTP] Initialized on socket %d with buffer size %d\r\n", 
-              tftp_socket, IP_CONFIG_TFTP_BUF_SIZE);
+              tftp_socket, ETH_TFTP_BUF_SIZE);
     
     /* Set initial status to PROGRESS */
     tftp_current_status = TFTP_STATUS_PROGRESS;

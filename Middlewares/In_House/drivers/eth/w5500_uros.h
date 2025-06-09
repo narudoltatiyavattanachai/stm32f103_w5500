@@ -8,10 +8,10 @@
  *          connection management beyond what the base socket layer provides.
  * 
  * @note    This module depends on w5500_socket.h for low-level socket operations
- *          and ip_config.h for micro-ROS specific configuration parameters.
+ *          and eth_config.h for micro-ROS specific configuration parameters.
  * 
  * @see     w5500_socket.h for base socket operations
- * @see     ip_config.h for network, socket assignments, and micro-ROS configuration
+ * @see     eth_config.h for network, socket assignments, and micro-ROS configuration
  */
 
 #ifndef _W5500_UROS_H_
@@ -22,7 +22,7 @@
 #include <stddef.h>
 #include "cmsis_os2.h"      /* CMSIS-RTOS v2 */
 #include "w5500_socket.h"  /* Base socket layer */
-#include "ip_config.h"     /* Socket assignments and network config */
+#include "eth_config.h"     /* Socket assignments and network config */
 
 /* Connection health status */
 typedef enum {

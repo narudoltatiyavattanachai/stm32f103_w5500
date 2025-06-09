@@ -5,7 +5,7 @@
  * @details Provides a modular wrapper around the third-party TFTP client library
  *          for file transfer over the network using TFTP protocol.
  * 
- * @note    Uses the socket defined by IP_CONFIG_TFTP_SOCKET (default: 1).
+ * @note    Uses the socket defined by ETH_CONFIG_TFTP_SOCKET (default: 1).
  */
 
 #ifndef _W5500_TFTP_H_
@@ -13,13 +13,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "ip_config.h"
+#include "eth_config.h"
 
 /*============================================================================*/
 /** @section TFTP CLIENT SERVICE
  *  @brief TFTP client for file transfer operations
  *  @details Handles TFTP file transfer operations (read/write).
- *           Socket defined by IP_CONFIG_TFTP_SOCKET.
+ *           Socket defined by ETH_CONFIG_TFTP_SOCKET.
  *============================================================================*/
 
 /**

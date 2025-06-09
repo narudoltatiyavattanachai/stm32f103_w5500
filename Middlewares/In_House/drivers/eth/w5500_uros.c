@@ -76,7 +76,7 @@ const uros_connection_stats_t* uros_get_stats(void)
 bool uros_agent_discovery(uros_agent_info_t *agent)
 {
     uint8_t tx_buf[] = "discover-micro-ros";
-    uint8_t rx_buf[IP_CONFIG_UROS_BUF_SIZE];
+    uint8_t rx_buf[ETH_CONFIG_UROS_BUF_SIZE];
     uint8_t remote_ip[4];
     uint16_t remote_port;
     uint32_t start_tick = osKernelGetTickCount();
@@ -95,12 +95,12 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
     
     /* Close any existing socket first */
     if (socket_created) {
-        w5500_close(IP_CONFIG_UROS_SOCKET);
+        w5500_close(ETH_CONFIG_UROS_SOCKET);
         socket_created = false;
     }
     
     /* Create UDP socket for discovery */
-    if (w5500_socket(IP_CONFIG_UROS_SOCKET, Sn_MR_UDP, IP_CONFIG_UROS_LOCAL_PORT, 0) != IP_CONFIG_UROS_SOCKET) {
+    if (w5500_socket(ETH_CONFIG_UROS_SOCKET, Sn_MR_UDP, ETH_CONFIG_UROS_LOCAL_PORT, 0) != ETH_CONFIG_UROS_SOCKET) {
         connection_stats.last_error = UROS_ERR_SOCKET_CREATE;
         DEBUG_PRINT("Agent discovery: Socket creation failed\r\n");
         osMutexRelease(socket_mutex);
@@ -114,26 +114,26 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
     
     /* Send initial discovery request */
     DEBUG_PRINT("Agent discovery: Broadcasting discovery request\r\n");
-    w5500_sendto(IP_CONFIG_UROS_SOCKET, tx_buf, sizeof(tx_buf), broadcast_ip, IP_CONFIG_UROS_DISC_PORT);
+    w5500_sendto(ETH_CONFIG_UROS_SOCKET, tx_buf, sizeof(tx_buf), broadcast_ip, ETH_CONFIG_UROS_DISC_PORT);
     discovery_attempts++;
     
-    while ((osKernelGetTickCount() - start_tick) < IP_CONFIG_UROS_DISC_TIMEOUT)
+    while ((osKernelGetTickCount() - start_tick) < ETH_CONFIG_UROS_DISC_TIMEOUT)
     {
         /* Resend discovery requests periodically */
         if (discovery_attempts < 5 && 
             (osKernelGetTickCount() - start_tick) > (discovery_attempts * 200)) {
-            w5500_sendto(IP_CONFIG_UROS_SOCKET, tx_buf, sizeof(tx_buf), broadcast_ip, IP_CONFIG_UROS_DISC_PORT);
+            w5500_sendto(ETH_CONFIG_UROS_SOCKET, tx_buf, sizeof(tx_buf), broadcast_ip, ETH_CONFIG_UROS_DISC_PORT);
             discovery_attempts++;
             DEBUG_PRINT("Agent discovery: Resending discovery request (attempt %d)\r\n", discovery_attempts);
         }
         
         /* Check for responses */
-        int32_t len = w5500_recvfrom(IP_CONFIG_UROS_SOCKET, rx_buf, sizeof(rx_buf), remote_ip, &remote_port);
-        if (len >= IP_CONFIG_UROS_DISC_SIG_LEN &&
-            memcmp(rx_buf, IP_CONFIG_UROS_DISC_SIG, IP_CONFIG_UROS_DISC_SIG_LEN) == 0)
+        int32_t len = w5500_recvfrom(ETH_CONFIG_UROS_SOCKET, rx_buf, sizeof(rx_buf), remote_ip, &remote_port);
+        if (len >= ETH_CONFIG_UROS_DISC_SIG_LEN &&
+            memcmp(rx_buf, ETH_CONFIG_UROS_DISC_SIG, ETH_CONFIG_UROS_DISC_SIG_LEN) == 0)
         {
             memcpy(agent->ip, remote_ip, 4);
-            agent->port = IP_CONFIG_UROS_AGENT_PORT;
+            agent->port = ETH_CONFIG_UROS_AGENT_PORT;
             DEBUG_PRINT("Agent discovery: Found agent at %d.%d.%d.%d:%d\r\n", 
                       remote_ip[0], remote_ip[1], remote_ip[2], remote_ip[3], agent->port);
             result = true;
@@ -147,7 +147,7 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
     }
     
     /* Always close the discovery socket when done */
-    w5500_close(IP_CONFIG_UROS_SOCKET);
+    w5500_close(ETH_CONFIG_UROS_SOCKET);
     socket_created = false;
     
     if (!result) {
@@ -162,23 +162,23 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
 
     discovery_attempts++;
     
-    while ((osKernelGetTickCount() - start_tick) < IP_CONFIG_UROS_DISC_TIMEOUT)
+    while ((osKernelGetTickCount() - start_tick) < ETH_CONFIG_UROS_DISC_TIMEOUT)
     {
         /* Resend discovery requests periodically */
         if (discovery_attempts < 5 && 
             (osKernelGetTickCount() - start_tick) > (discovery_attempts * 200)) {
-            w5500_sendto(IP_CONFIG_UROS_SOCKET, tx_buf, sizeof(tx_buf), broadcast_ip, IP_CONFIG_UROS_DISC_PORT);
+            w5500_sendto(ETH_CONFIG_UROS_SOCKET, tx_buf, sizeof(tx_buf), broadcast_ip, ETH_CONFIG_UROS_DISC_PORT);
             discovery_attempts++;
         }
         
         /* Check for responses */
-        int32_t len = w5500_recvfrom(IP_CONFIG_UROS_SOCKET, rx_buf, sizeof(rx_buf), remote_ip, &remote_port);
-        if (len >= IP_CONFIG_UROS_DISC_SIG_LEN &&
-            memcmp(rx_buf, IP_CONFIG_UROS_DISC_SIG, IP_CONFIG_UROS_DISC_SIG_LEN) == 0)
+        int32_t len = w5500_recvfrom(ETH_CONFIG_UROS_SOCKET, rx_buf, sizeof(rx_buf), remote_ip, &remote_port);
+        if (len >= ETH_CONFIG_UROS_DISC_SIG_LEN &&
+            memcmp(rx_buf, ETH_CONFIG_UROS_DISC_SIG, ETH_CONFIG_UROS_DISC_SIG_LEN) == 0)
         {
             memcpy(agent->ip, remote_ip, 4);
-            agent->port = IP_CONFIG_UROS_AGENT_PORT;
-            w5500_close(IP_CONFIG_UROS_SOCKET);
+            agent->port = ETH_CONFIG_UROS_AGENT_PORT;
+            w5500_close(ETH_CONFIG_UROS_SOCKET);
             result = true;
             break;
         }
@@ -190,7 +190,7 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
     }
 
     if (!result) {
-        w5500_close(IP_CONFIG_UROS_SOCKET);
+        w5500_close(ETH_CONFIG_UROS_SOCKET);
         connection_stats.last_error = UROS_ERR_TIMEOUT;
     }
     
@@ -208,12 +208,12 @@ bool uros_connect(const uros_agent_info_t *agent)
     
     /* Close any existing socket first */
     if (socket_created) {
-        w5500_close(IP_CONFIG_UROS_SOCKET);
+        w5500_close(ETH_CONFIG_UROS_SOCKET);
         socket_created = false;
     }
     
     /* Create UDP socket */
-    if (w5500_socket(IP_CONFIG_UROS_SOCKET, Sn_MR_UDP, IP_CONFIG_UROS_LOCAL_PORT, 0) != IP_CONFIG_UROS_SOCKET) {
+    if (w5500_socket(ETH_CONFIG_UROS_SOCKET, Sn_MR_UDP, ETH_CONFIG_UROS_LOCAL_PORT, 0) != ETH_CONFIG_UROS_SOCKET) {
         connection_stats.last_error = UROS_ERR_SOCKET_CREATE;
         connection_stats.state = UROS_CONN_ERROR;
         DEBUG_PRINT("Failed to create UDP socket\r\n");
@@ -265,7 +265,7 @@ bool uros_reconnect(uros_agent_info_t *agent)
             agent->ip[1] = 168;
             agent->ip[2] = 1;
             agent->ip[3] = 100;
-            agent->port = IP_CONFIG_UROS_AGENT_PORT;
+            agent->port = ETH_CONFIG_UROS_AGENT_PORT;
             DEBUG_PRINT("Reconnect: Using default agent %d.%d.%d.%d:%d\r\n",
                       agent->ip[0], agent->ip[1], agent->ip[2], agent->ip[3], agent->port);
         }
@@ -282,9 +282,9 @@ bool uros_reconnect(uros_agent_info_t *agent)
     }
     
     /* Try reconnecting with exponential backoff */
-    uint16_t retry_delay = IP_CONFIG_UROS_INIT_RETRY_MS;
+    uint16_t retry_delay = ETH_CONFIG_UROS_INIT_RETRY_MS;
     
-    for (uint8_t attempt = 0; attempt < IP_CONFIG_UROS_MAX_RETRY; attempt++) {
+    for (uint8_t attempt = 0; attempt < ETH_CONFIG_UROS_MAX_RETRY; attempt++) {
         DEBUG_PRINT("Reconnect: Attempt %d\r\n", attempt + 1);
         
         /* Try to connect using parameters */
@@ -301,11 +301,11 @@ bool uros_reconnect(uros_agent_info_t *agent)
         /* Apply exponential backoff delay */
         DEBUG_PRINT("Reconnect: Failed, retrying in %d ms\r\n", retry_delay);
         osDelay(retry_delay);
-        retry_delay *= IP_CONFIG_UROS_RETRY_FACTOR;
+        retry_delay *= ETH_CONFIG_UROS_RETRY_FACTOR;
         
         /* Cap the maximum retry delay */
-        if (retry_delay > IP_CONFIG_UROS_MAX_RETRY_MS) {
-            retry_delay = IP_CONFIG_UROS_MAX_RETRY_MS;
+        if (retry_delay > ETH_CONFIG_UROS_MAX_RETRY_MS) {
+            retry_delay = ETH_CONFIG_UROS_MAX_RETRY_MS;
         }
     }
     
@@ -321,8 +321,8 @@ bool uros_close(void)
     osMutexAcquire(socket_mutex, osWaitForever);
     
     if (socket_created) {
-        DEBUG_PRINT("Closing socket %d\r\n", IP_CONFIG_UROS_SOCKET);
-        w5500_close(IP_CONFIG_UROS_SOCKET);
+        DEBUG_PRINT("Closing socket %d\r\n", ETH_CONFIG_UROS_SOCKET);
+        w5500_close(ETH_CONFIG_UROS_SOCKET);
         socket_created = false;
     }
     connection_stats.state = UROS_CONN_DISCONNECTED;
@@ -345,7 +345,7 @@ int32_t uros_send(const uint8_t *buf, uint16_t len)
     }
 
     /* Send the data using sendto with the stored agent info */
-    send_result = w5500_sendto(IP_CONFIG_UROS_SOCKET, buf, len, 
+    send_result = w5500_sendto(ETH_CONFIG_UROS_SOCKET, buf, len, 
                              current_agent_ip, current_agent_port);
                              
     if (send_result < 0) {
@@ -380,7 +380,7 @@ int32_t uros_recv(uint8_t *buf, uint16_t len)
     }
 
     /* Receive the data using recvfrom since we're using UDP */
-    result = w5500_recvfrom(IP_CONFIG_UROS_SOCKET, buf, len, remote_ip, &remote_port);
+    result = w5500_recvfrom(ETH_CONFIG_UROS_SOCKET, buf, len, remote_ip, &remote_port);
     
     /* Handle socket error or closed condition */
     if (result < 0) {
@@ -416,7 +416,7 @@ bool uros_status(void)
         status = false;
     } else {
         /* Check if the socket is still open and in UDP mode */
-        sock_status = w5500_status(IP_CONFIG_UROS_SOCKET);
+        sock_status = w5500_status(ETH_CONFIG_UROS_SOCKET);
         status = (sock_status == SOCK_UDP);
         
         /* Update connection state if socket is no longer valid */
@@ -440,7 +440,7 @@ bool uros_heartbeat(uros_agent_info_t *agent)
     bool result = true;
     
     /* Only perform heartbeat check if enough time has passed since last check */
-    if ((current_time - last_heartbeat_time) < IP_CONFIG_UROS_HEARTBEAT_MS) {
+    if ((current_time - last_heartbeat_time) < ETH_CONFIG_UROS_HEARTBEAT_MS) {
         return uros_status();
     }
     
@@ -463,7 +463,7 @@ bool uros_heartbeat(uros_agent_info_t *agent)
     }
     
     /* If connection has been idle for too long, perform a status check */
-    if ((current_time - last_activity) > (IP_CONFIG_UROS_HEARTBEAT_MS * 3)) {
+    if ((current_time - last_activity) > (ETH_CONFIG_UROS_HEARTBEAT_MS * 3)) {
         DEBUG_PRINT("Heartbeat: Connection idle for %lu ms, checking status\r\n", 
                    (current_time - last_activity));
                    
@@ -508,7 +508,7 @@ bool cubemx_transport_open(struct uxrCustomTransport *transport)
         sscanf(agent_ip, "%hhu.%hhu.%hhu.%hhu", 
                &agent_info.ip[0], &agent_info.ip[1], 
                &agent_info.ip[2], &agent_info.ip[3]);
-        agent_info.port = IP_CONFIG_UROS_AGENT_PORT;
+        agent_info.port = ETH_CONFIG_UROS_AGENT_PORT;
         DEBUG_PRINT("Transport: Using provided agent IP %d.%d.%d.%d:%d\r\n",
                   agent_info.ip[0], agent_info.ip[1], 
                   agent_info.ip[2], agent_info.ip[3],

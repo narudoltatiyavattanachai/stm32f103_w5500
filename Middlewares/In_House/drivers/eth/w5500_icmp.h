@@ -6,7 +6,7 @@
  *          connectivity testing using the ping protocol. Uses one UDP socket
  *          to send and receive ICMP packets.
  * 
- * @note    Uses the socket defined by IP_CONFIG_ICMP_SOCKET (default: 1).
+ * @note    Uses the socket defined by ETH_CONFIG_ICMP_SOCKET (default: 1).
  */
 
 #ifndef _W5500_ICMP_H_
@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "ip_config.h"
+#include "eth_config.h"
 
 /* ICMP message types */
 #define ICMP_ECHO_REPLY   0
@@ -24,7 +24,7 @@
 /** @section ICMP/PING SERVICE 
  *  @brief ICMP echo functionality for connectivity testing
  *  @details Handles ICMP echo requests/replies for ping operations.
- *           Socket defined by IP_CONFIG_ICMP_SOCKET.
+ *           Socket defined by ETH_CONFIG_ICMP_SOCKET.
  *============================================================================*/
 
 /**

@@ -3,16 +3,16 @@
 /*  @brief   DHCP client implementation for W5500 Ethernet controller         */
 /*----------------------------------------------------------------------------*/
 /*  This file implements DHCP client functionality for W5500 Ethernet         */
-/*  controller, using the WIZnet ioLibrary_Driver. It handles IP address      */
+/*  controller, using the WIZnet ioLibrary_Driver. It handles ETH address      */
 /*  assignment, renewal, and conflict resolution.                             */
 /*                                                                            */
 /*  Usage:                                                                    */
 /*    - Provides network initialization and DHCP client services              */
-/*    - All configuration is centralized via ip_config.h macros               */
+/*    - All configuration is centralized via eth_config.h macros               */
 /*    - Debugging can be enabled with W5500_DEBUG                             */
 /*                                                                            */
 /*  Maintenance:                                                              */
-/*    - Keep all buffer sizes, timeouts, and socket numbers in ip_config.h    */
+/*    - Keep all buffer sizes, timeouts, and socket numbers in eth_config.h    */
 /*    - Use section headers and Doxygen-style comments for clarity            */
 /*============================================================================*/
 
@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "stm32f1xx_hal.h"
-#include "ip_config.h"
+#include "eth_config.h"
 
 /*============================================================================*/
 /*                         DEBUG PRINT MACRO                                  */
@@ -45,10 +45,10 @@
 /*                         PRIVATE STATE AND BUFFERS                          */
 /*============================================================================*/
 static bool ip_assigned_flag = false;   /**< True if IP is assigned, false otherwise */
-static uint8_t dhcp_socket = IP_CONFIG_DHCP_SOCKET; /**< DHCP socket number */
+static uint8_t dhcp_socket = ETH_CONFIG_DHCP_SOCKET; /**< DHCP socket number */
 
 /* Buffer for DHCP client */
-static uint8_t dhcp_buffer[IP_CONFIG_DHCP_BUF_SIZE];
+static uint8_t dhcp_buffer[ETH_CONFIG_DHCP_BUF_SIZE];
 
 /* Cache of DHCP-obtained network parameters */
 static uint8_t dhcp_ip[4];       /**< IP address assigned by DHCP */
@@ -60,16 +60,16 @@ static uint8_t dhcp_dns[4];      /**< DNS server address assigned by DHCP */
 extern bool w5500_discovery_init(void);
 
 /**
- * @brief Initialize network interface using parameters from ip_config.h
+ * @brief Initialize network interface using parameters from eth_config.h
  * @return true if initialization and configuration succeeded, false otherwise
  */
 bool w5500_network_init(void)
 {
     wiz_NetInfo wiznet_info = {0};
     /* Set MAC address from configuration */
-    uint8_t mac_addr[] = IP_CONFIG_MAC;
+    uint8_t mac_addr[] = ETH_CONFIG_MAC;
     memcpy(wiznet_info.mac, mac_addr, sizeof(wiznet_info.mac));
-    if (IP_CONFIG_USE_DHCP) {
+    if (ETH_CONFIG_USE_DHCP) {
         /* If DHCP is enabled, set zero IPs initially */
         uint8_t zero_ip[4] = {0, 0, 0, 0};
         memcpy(wiznet_info.ip, zero_ip, sizeof(wiznet_info.ip));
@@ -78,11 +78,11 @@ bool w5500_network_init(void)
         memcpy(wiznet_info.dns, zero_ip, sizeof(wiznet_info.dns));
         wiznet_info.dhcp = NETINFO_DHCP;
     } else {
-        /* Use static IP configuration from ip_config.h */
-        uint8_t ip[] = IP_CONFIG_IP;
-        uint8_t subnet[] = IP_CONFIG_SUBNET;
-        uint8_t gateway[] = IP_CONFIG_GATEWAY;
-        uint8_t dns[] = IP_CONFIG_DNS;
+        /* Use static IP configuration from eth_config.h */
+        uint8_t ip[] = ETH_CONFIG_IP;
+        uint8_t subnet[] = ETH_CONFIG_SUBNET;
+        uint8_t gateway[] = ETH_CONFIG_GATEWAY;
+        uint8_t dns[] = ETH_CONFIG_DNS;
         memcpy(wiznet_info.ip, ip, sizeof(wiznet_info.ip));
         memcpy(wiznet_info.sn, subnet, sizeof(wiznet_info.sn));
         memcpy(wiznet_info.gw, gateway, sizeof(wiznet_info.gw));
@@ -98,18 +98,18 @@ bool w5500_network_init(void)
         return false;
     }
     /* If not using DHCP, IP is considered assigned */
-    ip_assigned_flag = !IP_CONFIG_USE_DHCP;
-    DEBUG_PRINT("w5500_network_init: Network initialized, DHCP %s\r\n", IP_CONFIG_USE_DHCP ? "enabled" : "disabled");
+    ip_assigned_flag = !ETH_CONFIG_USE_DHCP;
+    DEBUG_PRINT("w5500_network_init: Network initialized, DHCP %s\r\n", ETH_CONFIG_USE_DHCP ? "enabled" : "disabled");
     return true;
 }
 
 /**
- * @brief Initialize DHCP client process using parameters from ip_config.h
+ * @brief Initialize DHCP client process using parameters from eth_config.h
  * @return true if initialization succeeded, false otherwise
  */
 bool w5500_dhcp_init(void)
 {
-    if (!IP_CONFIG_USE_DHCP) {
+    if (!ETH_CONFIG_USE_DHCP) {
         DEBUG_PRINT("w5500_dhcp_init: DHCP not enabled in configuration\r\n");
         return false;
     }
@@ -140,7 +140,7 @@ void w5500_register_ip_callbacks(void(*ip_assigned)(void), void(*ip_changed)(voi
  */
 ip_status_t w5500_dhcp_process(void)
 {
-    if (!IP_CONFIG_USE_DHCP) {
+    if (!ETH_CONFIG_USE_DHCP) {
         return ip_assigned_flag ? IP_STATUS_ASSIGNED : IP_STATUS_NONE;
     }
     
@@ -241,10 +241,10 @@ bool w5500_is_ip_assigned(void)
  */
 void w5500_dhcp_get_ip(uint8_t* ip)
 {
-    if (IP_CONFIG_USE_DHCP && ip_assigned_flag) {
+    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
         memcpy(ip, dhcp_ip, 4);
     } else {
-        uint8_t config_ip[] = IP_CONFIG_IP;
+        uint8_t config_ip[] = ETH_CONFIG_IP;
         memcpy(ip, config_ip, 4);
     }
 }
@@ -255,10 +255,10 @@ void w5500_dhcp_get_ip(uint8_t* ip)
  */
 void w5500_dhcp_get_subnet(uint8_t* subnet)
 {
-    if (IP_CONFIG_USE_DHCP && ip_assigned_flag) {
+    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
         memcpy(subnet, dhcp_subnet, 4);
     } else {
-        uint8_t config_subnet[] = IP_CONFIG_SUBNET;
+        uint8_t config_subnet[] = ETH_CONFIG_SUBNET;
         memcpy(subnet, config_subnet, 4);
     }
 }
@@ -269,10 +269,10 @@ void w5500_dhcp_get_subnet(uint8_t* subnet)
  */
 void w5500_dhcp_get_gateway(uint8_t* gateway)
 {
-    if (IP_CONFIG_USE_DHCP && ip_assigned_flag) {
+    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
         memcpy(gateway, dhcp_gateway, 4);
     } else {
-        uint8_t config_gateway[] = IP_CONFIG_GATEWAY;
+        uint8_t config_gateway[] = ETH_CONFIG_GATEWAY;
         memcpy(gateway, config_gateway, 4);
     }
 }
@@ -283,10 +283,10 @@ void w5500_dhcp_get_gateway(uint8_t* gateway)
  */
 void w5500_dhcp_get_dns(uint8_t* dns)
 {
-    if (IP_CONFIG_USE_DHCP && ip_assigned_flag) {
+    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
         memcpy(dns, dhcp_dns, 4);
     } else {
-        uint8_t config_dns[] = IP_CONFIG_DNS;
+        uint8_t config_dns[] = ETH_CONFIG_DNS;
         memcpy(dns, config_dns, 4);
     }
 }
@@ -297,7 +297,7 @@ void w5500_dhcp_get_dns(uint8_t* dns)
 void w5500_dhcp_time_handler(void)
 {
     /* Call DHCP library's time handler */
-    if (IP_CONFIG_USE_DHCP) {
+    if (ETH_CONFIG_USE_DHCP) {
         DHCP_time_handler();
     }
 }

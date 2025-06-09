@@ -110,22 +110,6 @@ void StartTask03(void *argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-volatile bool ip_assigned = false;
-
-void Callback_IPAssigned(void) {
-    UART_Printf("Callback: IP assigned! Leased time: %d sec\r\n", getDHCPLeasetime());
-    ip_assigned = true;
-}
-
-void Callback_IPConflict(void) {
-    UART_Printf("Callback: IP conflict!\r\n");
-}
-
-// 1K should be enough, see https://forum.wiznet.io/t/topic/1612/2
-uint8_t dhcp_buffer[1024];
-// 1K seems to be enough for this buffer as well
-uint8_t dns_buffer[1024];
-
 /* USER CODE END 0 */
 
 /**

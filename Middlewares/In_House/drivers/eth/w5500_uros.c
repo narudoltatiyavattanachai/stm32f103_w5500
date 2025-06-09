@@ -91,7 +91,7 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
     osMutexAcquire(socket_mutex, osWaitForever);
     
     /* Update connection state */
-    connection_stats.state = UROS_CONN_DISCONNECTED;
+    connection_stats.state = ETH_CONFIG_UROS_CONN_DISCONNECTED;
     
     /* Close any existing socket first */
     if (socket_created) {

@@ -6,6 +6,12 @@
  *          API to isolate application code from direct dependencies on
  *          third-party libraries. All socket operations should use these
  *          wrapper functions instead of calling socket.h functions directly.
+ * 
+ * @note    This is the foundational socket abstraction layer that all protocol
+ *          implementations (ICMP, DNS, DHCP, HTTP, etc.) should use for network
+ *          communication.
+ * 
+ * @see     ip_config.h for network and socket configuration parameters
  */
 
 #ifndef _W5500_SOCKET_H_
@@ -13,14 +19,52 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "ip_config.h"
+
+/*============================================================================*/
+/** @section GENERIC NETWORK INFORMATION
+ *  @brief Get current network parameters (IP, subnet, gateway, DNS)
+ *  @details These functions provide information about the current network
+ *           configuration.
+ *============================================================================*/
 
 /**
- * @brief Create a socket with the specified parameters
+ * @brief Get current IP address
+ * @param ip Pointer to store IP address (4 bytes)
+ */
+void w5500_get_ip(uint8_t *ip);
+
+/**
+ * @brief Get current subnet mask
+ * @param subnet Pointer to store subnet mask (4 bytes)
+ */
+void w5500_get_subnet(uint8_t *subnet);
+
+/**
+ * @brief Get current gateway address
+ * @param gateway Pointer to store gateway address (4 bytes)
+ */
+void w5500_get_gateway(uint8_t *gateway);
+
+/**
+ * @brief Get current DNS server address
+ * @param dns Pointer to store DNS server address (4 bytes)
+ */
+void w5500_get_dns(uint8_t *dns);
+
+/*============================================================================*/
+/** @section GENERIC SOCKET/UDP OPERATIONS
+ *  @brief Generic socket, send, receive, and option functions for all services
+ *============================================================================*/
+
+/**
+ * @brief Create a UDP socket (UDP-only implementation)
  * @param socket_num Socket number to create
- * @param protocol Protocol type (TCP, UDP, etc.)
+ * @param protocol Must be Sn_MR_UDP (UDP only)
  * @param port Local port number
  * @param flag Socket flags
  * @return Socket number if successful, negative value on error
+ * @note Only UDP sockets are supported due to resource constraints.
  */
 int8_t w5500_socket(uint8_t socket_num, uint8_t protocol, uint16_t port, uint8_t flag);
 
@@ -31,46 +75,8 @@ int8_t w5500_socket(uint8_t socket_num, uint8_t protocol, uint16_t port, uint8_t
  */
 int8_t w5500_close(uint8_t socket_num);
 
-/**
- * @brief Listen for incoming connections on a socket
- * @param socket_num Socket number to listen on
- * @return SOCK_OK if successful, negative value on error
- */
-int8_t w5500_listen(uint8_t socket_num);
-
-/**
- * @brief Connect to a remote host
- * @param socket_num Socket number to use for connection
- * @param remote_ip IP address of remote host
- * @param remote_port Port number of remote host
- * @return SOCK_OK if successful, negative value on error
- */
-int8_t w5500_connect(uint8_t socket_num, const uint8_t *remote_ip, uint16_t remote_port);
-
-/**
- * @brief Disconnect a TCP connection
- * @param socket_num Socket number to disconnect
- * @return SOCK_OK if successful, negative value on error
- */
-int8_t w5500_disconnect(uint8_t socket_num);
-
-/**
- * @brief Send data through a connected TCP socket
- * @param socket_num Socket number to send data on
- * @param data Pointer to data to send
- * @param data_len Length of data to send
- * @return Number of bytes sent if successful, negative value on error
- */
-int32_t w5500_send(uint8_t socket_num, const uint8_t *data, uint16_t data_len);
-
-/**
- * @brief Receive data from a connected TCP socket
- * @param socket_num Socket number to receive data from
- * @param data Buffer to store received data
- * @param data_len Maximum number of bytes to receive
- * @return Number of bytes received if successful, negative value on error
- */
-int32_t w5500_recv(uint8_t socket_num, uint8_t *data, uint16_t data_len);
+/* TCP listen not supported: UDP-only implementation */
+/* int8_t w5500_listen(uint8_t socket_num); */
 
 /**
  * @brief Send data through a UDP socket to a specific destination
@@ -121,5 +127,4 @@ int8_t w5500_getsockopt(uint8_t socket_num, uint8_t option_type, void *option_va
  */
 uint8_t w5500_socket_status(uint8_t socket_num);
 
-
-#endif /* _W5500_SOCKET_H */
+#endif /* _W5500_SOCKET_H_ */

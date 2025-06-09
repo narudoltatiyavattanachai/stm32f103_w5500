@@ -1,14 +1,17 @@
 /**
  * @file uros_transport.h
  * @brief W5500 Ethernet transport interface for micro-ROS
- *        Specialized module for micro-ROS integration
  * 
  * @details This transport implementation provides the necessary interface for
  *          integrating a W5500 Ethernet controller with the micro-ROS middleware.
- *          It implements the custom transport API required by micro-ROS.
+ *          It implements the custom transport API required by micro-ROS and sits
+ *          at the top of the networking stack hierarchy.
  * 
- * @author Your Name
- * @date 2025-06-09
+ * @note    The transport layer depends on uros_socket for communication with
+ *          the micro-ROS agent and uses the custom transport API from micro-ROS.
+ * 
+ * @see     uros_socket.h for socket wrapper functions
+ * @see     ip_config.h for micro-ROS and network configuration parameters
  */
 
 #ifndef _UROS_TRANSPORT_H_

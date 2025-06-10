@@ -2,29 +2,18 @@
 /*  @file    w5500_dhcp.c                                                     */
 /*  @brief   DHCP client implementation for W5500 Ethernet controller         */
 /*----------------------------------------------------------------------------*/
-/*  This file implements DHCP client functionality for W5500 Ethernet         */
-/*  controller, using the WIZnet ioLibrary_Driver. It handles ETH address      */
-/*  assignment, renewal, and conflict resolution.                             */
-/*                                                                            */
-/*  Usage:                                                                    */
-/*    - Provides network initialization and DHCP client services              */
-/*    - All configuration is centralized via eth_config.h macros               */
-/*    - Debugging can be enabled with W5500_DEBUG                             */
-/*                                                                            */
-/*  Maintenance:                                                              */
-/*    - Keep all buffer sizes, timeouts, and socket numbers in eth_config.h    */
-/*    - Use section headers and Doxygen-style comments for clarity            */
+/*  Centralized configuration using eth_config.h                              */
 /*============================================================================*/
 
 #include "w5500_dhcp.h"
 #include "w5500_socket.h"
-#include "socket.h"
-#include "wizchip_conf.h"
-#include "dhcp.h"
+#include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
+#include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Internet/DHCP/dhcp.h"
+#include "eth_config.h"
 #include <string.h>
 #include <stdio.h>
 #include "stm32f1xx_hal.h"
-#include "eth_config.h"
 
 /*============================================================================*/
 /*                         DEBUG PRINT MACRO                                  */
@@ -38,266 +27,108 @@
 /*============================================================================*/
 /*                         PRIVATE CONSTANTS                                  */
 /*============================================================================*/
-/** @brief Maximum DHCP retry count before timeout */
 #define DHCP_MAX_RETRY_COUNT    5
 
 /*============================================================================*/
-/*                         PRIVATE STATE AND BUFFERS                          */
+/*                         PRIVATE VARIABLES                                  */
 /*============================================================================*/
-static bool ip_assigned_flag = false;   /**< True if IP is assigned, false otherwise */
-static uint8_t dhcp_socket = ETH_CONFIG_DHCP_SOCKET; /**< DHCP socket number */
+static uint8_t dhcp_retry = 0;
+static bool ip_assigned_flag = false;
 
-/* Buffer for DHCP client */
-static uint8_t dhcp_buffer[ETH_CONFIG_DHCP_BUF_SIZE];
+static uint8_t dhcp_buffer[548];
+static uint8_t dhcp_socket = ETH_CONFIG_DHCP_SOCKET;
 
-/* Cache of DHCP-obtained network parameters */
-static uint8_t dhcp_ip[4];       /**< IP address assigned by DHCP */
-static uint8_t dhcp_subnet[4];   /**< Subnet mask assigned by DHCP */
-static uint8_t dhcp_gateway[4];  /**< Gateway address assigned by DHCP */
-static uint8_t dhcp_dns[4];      /**< DNS server address assigned by DHCP */
-
-/* Forward declaration for discovery initialization */
-extern bool w5500_discovery_init(void);
+/*============================================================================*/
+/*                         CALLBACKS FROM DHCP LIBRARY                        */
+/*============================================================================*/
 
 /**
- * @brief Initialize network interface using parameters from eth_config.h
- * @return true if initialization and configuration succeeded, false otherwise
+ * @brief Called when IP is successfully assigned or renewed.
  */
-bool w5500_network_init(void)
+static void on_dhcp_assigned(void)
 {
-    wiz_NetInfo wiznet_info = {0};
-    /* Set MAC address from configuration */
-    uint8_t mac_addr[] = ETH_CONFIG_MAC;
-    memcpy(wiznet_info.mac, mac_addr, sizeof(wiznet_info.mac));
-    if (ETH_CONFIG_USE_DHCP) {
-        /* If DHCP is enabled, set zero IPs initially */
-        uint8_t zero_ip[4] = {0, 0, 0, 0};
-        memcpy(wiznet_info.ip, zero_ip, sizeof(wiznet_info.ip));
-        memcpy(wiznet_info.sn, zero_ip, sizeof(wiznet_info.sn));
-        memcpy(wiznet_info.gw, zero_ip, sizeof(wiznet_info.gw));
-        memcpy(wiznet_info.dns, zero_ip, sizeof(wiznet_info.dns));
-        wiznet_info.dhcp = NETINFO_DHCP;
-    } else {
-        /* Use static IP configuration from eth_config.h */
-        uint8_t ip[] = ETH_CONFIG_IP;
-        uint8_t subnet[] = ETH_CONFIG_SUBNET;
-        uint8_t gateway[] = ETH_CONFIG_GATEWAY;
-        uint8_t dns[] = ETH_CONFIG_DNS;
-        memcpy(wiznet_info.ip, ip, sizeof(wiznet_info.ip));
-        memcpy(wiznet_info.sn, subnet, sizeof(wiznet_info.sn));
-        memcpy(wiznet_info.gw, gateway, sizeof(wiznet_info.gw));
-        memcpy(wiznet_info.dns, dns, sizeof(wiznet_info.dns));
-        wiznet_info.dhcp = NETINFO_STATIC;
-    }
-    /* Apply network configuration to W5500 */
-    wizchip_setnetinfo(&wiznet_info);
-    wiz_NetInfo verify_info;
-    wizchip_getnetinfo(&verify_info);
-    if (memcmp(&wiznet_info, &verify_info, sizeof(wiz_NetInfo)) != 0) {
-        DEBUG_PRINT("w5500_network_init: Failed to set network info!\r\n");
-        return false;
-    }
-    /* If not using DHCP, IP is considered assigned */
-    ip_assigned_flag = !ETH_CONFIG_USE_DHCP;
-    DEBUG_PRINT("w5500_network_init: Network initialized, DHCP %s\r\n", ETH_CONFIG_USE_DHCP ? "enabled" : "disabled");
-    return true;
+    DEBUG_PRINT("[DHCP] IP assigned.\r\n");
+
+    getIPfromDHCP(g_network_info.ip);
+    getGWfromDHCP(g_network_info.gw);
+    getSNfromDHCP(g_network_info.sn);
+    getDNSfromDHCP(g_network_info.dns);
+    g_network_info.dhcp = NETINFO_DHCP;
+
+    eth_config_set_netinfo(&g_network_info);
+    ip_assigned_flag = true;
 }
 
 /**
- * @brief Initialize DHCP client process using parameters from eth_config.h
- * @return true if initialization succeeded, false otherwise
+ * @brief Called when a conflict is detected on the assigned IP.
  */
-bool w5500_dhcp_init(void)
+static void on_dhcp_conflict(void)
 {
-    if (!ETH_CONFIG_USE_DHCP) {
-        DEBUG_PRINT("w5500_dhcp_init: DHCP not enabled in configuration\r\n");
-        return false;
-    }
-    /* Initialize DHCP client with socket and buffer */
-    DHCP_init(dhcp_socket, dhcp_buffer);
-    /* Reset IP assignment flag */
+    DEBUG_PRINT("[DHCP] IP conflict detected.\r\n");
+    w5500_dhcp_stop();
     ip_assigned_flag = false;
-    DEBUG_PRINT("w5500_dhcp_init: DHCP initialized on socket %d\r\n", dhcp_socket);
-    return true;
 }
 
-/**
- * @brief Register callbacks for IP assignment events
- * @param ip_assigned Callback for IP assigned event
- * @param ip_changed Callback for IP changed event
- * @param ip_conflict Callback for IP conflict event
- */
-void w5500_register_ip_callbacks(void(*ip_assigned)(void), void(*ip_changed)(void), void(*ip_conflict)(void))
+/*============================================================================*/
+/*                         PUBLIC API IMPLEMENTATION                          */
+/*============================================================================*/
+
+void w5500_dhcp_init(void)
 {
-    /* Register callback functions with DHCP library */
-    reg_dhcp_cbfunc(ip_assigned, ip_changed, ip_conflict);
-    DEBUG_PRINT("w5500_register_ip_callbacks: Callbacks registered\r\n");
+    DHCP_init(dhcp_socket, dhcp_buffer);
+    reg_dhcp_cbfunc(on_dhcp_assigned, on_dhcp_assigned, on_dhcp_conflict);
+    ip_assigned_flag = false;
+    dhcp_retry = 0;
+
+    DEBUG_PRINT("[DHCP] DHCP client initialized on socket %d.\r\n", dhcp_socket);
 }
 
-/**
- * @brief Process DHCP client tasks, should be called periodically
- * @return Current IP assignment status (IP_STATUS_ASSIGNED, IP_STATUS_CHANGED, ...)
- */
-ip_status_t w5500_dhcp_process(void)
+void w5500_dhcp_task1000ms(void)
 {
-    if (!ETH_CONFIG_USE_DHCP) {
-        return ip_assigned_flag ? IP_STATUS_ASSIGNED : IP_STATUS_NONE;
-    }
-    
-    /* Run DHCP client process */
-    uint8_t dhcp_status = DHCP_run();
-    static bool discovery_started = false;
-    ip_status_t result = IP_STATUS_NONE;
-    
-    /* Map DHCP library status to our status enum */
-    switch (dhcp_status) {
-        case DHCP_IP_ASSIGN:
-            /* Cache network parameters received from DHCP server */
-            getIPfromDHCP(dhcp_ip);
-            getSNfromDHCP(dhcp_subnet);
-            getGWfromDHCP(dhcp_gateway);
-            getDNSfromDHCP(dhcp_dns);
-            
-            ip_assigned_flag = true;
-            result = IP_STATUS_ASSIGNED;
-            DEBUG_PRINT("w5500_dhcp_process: IP assigned: %d.%d.%d.%d\r\n", 
-                       dhcp_ip[0], dhcp_ip[1], dhcp_ip[2], dhcp_ip[3]);
-            
-            /* Auto-initialize discovery service when IP is assigned */
-            if (!discovery_started) {
-                if (w5500_discovery_init()) {
-                    discovery_started = true;
-                    DEBUG_PRINT("w5500_dhcp_process: Discovery service auto-initialized\r\n");
+    DHCP_time_handler();
+}
+
+uint8_t w5500_dhcp_task10ms(void)
+{
+    uint8_t dhcp_state = DHCP_run();
+
+    if (!ip_assigned_flag) {
+        switch (dhcp_state) {
+            case DHCP_IP_ASSIGN:
+            case DHCP_IP_CHANGED:
+                DEBUG_PRINT("[DHCP] New IP acquired.\r\n");
+                break;
+
+            case DHCP_FAILED:
+                if (++dhcp_retry > DHCP_MAX_RETRY_COUNT) {
+                    DEBUG_PRINT("[DHCP] Max retry exceeded.\r\n");
+                    w5500_dhcp_stop();
                 }
-            }
-            break;
-            
-        case DHCP_IP_CHANGED:
-            /* Update cached network parameters */
-            getIPfromDHCP(dhcp_ip);
-            getSNfromDHCP(dhcp_subnet);
-            getGWfromDHCP(dhcp_gateway);
-            getDNSfromDHCP(dhcp_dns);
-            
-            ip_assigned_flag = true;
-            result = IP_STATUS_CHANGED;
-            DEBUG_PRINT("w5500_dhcp_process: IP changed to: %d.%d.%d.%d\r\n", 
-                       dhcp_ip[0], dhcp_ip[1], dhcp_ip[2], dhcp_ip[3]);
-                       
-            /* Restart discovery service when IP changes */
-            if (w5500_discovery_init()) {
-                discovery_started = true;
-                DEBUG_PRINT("w5500_dhcp_process: Discovery service restarted with new IP\r\n");
-            }
-            break;
-            
-        case DHCP_FAILED:
-            ip_assigned_flag = false;
-            result = IP_STATUS_FAILED;
-            discovery_started = false;
-            DEBUG_PRINT("w5500_dhcp_process: DHCP failed\r\n");
-            break;
-            
-        case DHCP_IP_CONFLICT:
-            ip_assigned_flag = false;
-            result = IP_STATUS_CONFLICT;
-            discovery_started = false;
-            DEBUG_PRINT("w5500_dhcp_process: IP conflict detected\r\n");
-            break;
-            
-        case DHCP_RUNNING:
-            result = IP_STATUS_PROCESSING;
-            break;
-            
-        case DHCP_STOPPED:
-            result = IP_STATUS_STOPPED;
-            break;
-            
-        case DHCP_IP_LEASED:
-            /* Nothing to do, already leased */
-            result = IP_STATUS_ASSIGNED;
-            break;
-            
-        default:
-            /* No change in status */
-            break;
+                break;
+        }
     }
-    
-    return result;
+
+    return dhcp_state;
 }
 
-/**
- * @brief Check if an IP address is assigned
- * @return true if IP is assigned, false otherwise
- */
-bool w5500_is_ip_assigned(void)
+void w5500_dhcp_stop(void)
 {
-    return ip_assigned_flag;
+    DHCP_stop();
+    ip_assigned_flag = false;
+    DEBUG_PRINT("[DHCP] DHCP client stopped.\r\n");
 }
 
-/**
- * @brief Get the current IP address obtained via DHCP
- * @param ip Buffer to store the IP address (4 bytes)
- */
-void w5500_dhcp_get_ip(uint8_t* ip)
+void w5500_getInfo(void)
 {
-    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
-        memcpy(ip, dhcp_ip, 4);
-    } else {
-        uint8_t config_ip[] = ETH_CONFIG_IP;
-        memcpy(ip, config_ip, 4);
-    }
-}
+    wiz_NetInfo net;
+    eth_config_get_netinfo(&net);
 
-/**
- * @brief Get the current subnet mask obtained via DHCP
- * @param subnet Buffer to store the subnet mask (4 bytes)
- */
-void w5500_dhcp_get_subnet(uint8_t* subnet)
-{
-    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
-        memcpy(subnet, dhcp_subnet, 4);
-    } else {
-        uint8_t config_subnet[] = ETH_CONFIG_SUBNET;
-        memcpy(subnet, config_subnet, 4);
-    }
-}
-
-/**
- * @brief Get the current gateway address obtained via DHCP
- * @param gateway Buffer to store the gateway address (4 bytes)
- */
-void w5500_dhcp_get_gateway(uint8_t* gateway)
-{
-    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
-        memcpy(gateway, dhcp_gateway, 4);
-    } else {
-        uint8_t config_gateway[] = ETH_CONFIG_GATEWAY;
-        memcpy(gateway, config_gateway, 4);
-    }
-}
-
-/**
- * @brief Get the current DNS server address obtained via DHCP
- * @param dns Buffer to store the DNS server address (4 bytes)
- */
-void w5500_dhcp_get_dns(uint8_t* dns)
-{
-    if (ETH_CONFIG_USE_DHCP && ip_assigned_flag) {
-        memcpy(dns, dhcp_dns, 4);
-    } else {
-        uint8_t config_dns[] = ETH_CONFIG_DNS;
-        memcpy(dns, config_dns, 4);
-    }
-}
-
-/**
- * @brief Handle DHCP 1-second timer
- */
-void w5500_dhcp_time_handler(void)
-{
-    /* Call DHCP library's time handler */
-    if (ETH_CONFIG_USE_DHCP) {
-        DHCP_time_handler();
-    }
+    printf("--- W5500 Network Information (from DHCP) ---\r\n");
+    printf("  IP Address: %d.%d.%d.%d\r\n", net.ip[0], net.ip[1], net.ip[2], net.ip[3]);
+    printf("  Gateway:    %d.%d.%d.%d\r\n", net.gw[0], net.gw[1], net.gw[2], net.gw[3]);
+    printf("  Subnet Mask:%d.%d.%d.%d\r\n", net.sn[0], net.sn[1], net.sn[2], net.sn[3]);
+    printf("  DNS Server: %d.%d.%d.%d\r\n", net.dns[0], net.dns[1], net.dns[2], net.dns[3]);
+    printf("  DHCP Mode:  %s\r\n", net.dhcp == NETINFO_DHCP ? "DHCP" : "STATIC");
+    printf("  Lease Time: %lu seconds\r\n", getDHCPLeasetime());
+    printf("---------------------------------------------\r\n");
 }

@@ -23,11 +23,33 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* W5500 and DHCP includes */
-#include "w5500.h"
-#include "w5500_dhcp.h"
-#include "wizchip_conf.h"
 #include "eth_config.h"
+#include "../../../Middlewares/In_House/drivers/eth/w5500_spi.h"
+#include "../../../Middlewares/In_House/drivers/eth/w5500_dhcp.h"
+#include "../../../Middlewares/In_House/drivers/eth/w5500_icmp.h"
+
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/W5500/w5500.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Internet/DHCP/dhcp.h"
+
+#include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
+
+// Retarget printf to USART1
+extern UART_HandleTypeDef huart1;
+
+int __io_putchar(int ch) {
+    HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+    return ch;
+}
+
+int _write(int file, char *ptr, int len) {
+    HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, HAL_MAX_DELAY);
+    return len;
+}
 
 /* USER CODE END Includes */
 
@@ -110,8 +132,7 @@ void StartTask02(void *argument);
 void StartTask03(void *argument);
 
 /* USER CODE BEGIN PFP */
-/* W5500 Ethernet DHCP initialization function */
-bool startDhcpInit(uint8_t maxRetries, uint32_t timeoutMs);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -157,13 +178,29 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
-
-  /* Initialize W5500 Ethernet controller with DHCP */
-  if (startDhcpInit(5, 15000)) {
-    printf("W5500 network initialized successfully\r\n");
-  } else {
-    printf("W5500 network initialization failed or using fallback static IP\r\n");
+  printf("\r\nStarting W5500 initialization...\r\n");
+  
+  // Initialize W5500 hardware
+  printf("Calling w5500_init()...\r\n");
+  w5500_init();
+  
+  // Add a small delay after W5500 reset
+  HAL_Delay(100);
+  
+  printf("W5500 initialized. Initializing DHCP...\r\n");
+  
+  // Initialize DHCP client
+  if (!w5500_dhcp_init()) {
+    printf("Failed to initialize DHCP!\r\n");
+    Error_Handler();
   }
+  
+  printf("DHCP initialization complete. Starting RTOS...\r\n");
+  
+  // Keep ICMP disabled for now
+  //w5500_icmp_init();
+  
+  printf("Initialization complete. Starting RTOS scheduler...\r\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -625,107 +662,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-/**
- * @brief Initialize W5500 network interface with DHCP
- * 
- * @param maxRetries Maximum number of DHCP attempts before falling back to static IP
- * @param timeoutMs Timeout in milliseconds for each DHCP attempt
- * @return true if network initialized successfully (either with DHCP or static fallback)
- */
-bool startDhcpInit(uint8_t maxRetries, uint32_t timeoutMs) {
-  bool success = false;
-  uint8_t retryCount = 0;
-  uint8_t gateway[4] = {0};
-  uint8_t ipAddr[4] = {0};
-  uint8_t subnetMask[4] = {0};
-  uint32_t startTime;
-
-  /* Step 1: Initialize W5500 network interface */
-  if (!w5500_network_init()) {
-    printf("Error: Failed to initialize W5500 network interface\r\n");
-    return false;
-  }
-
-  /* Step 2: Initialize DHCP client */
-  if (!w5500_dhcp_init()) {
-    printf("Error: Failed to initialize DHCP client\r\n");
-    return false;
-  }
-
-  /* Step 3: Wait for DHCP process to complete with timeout and retry logic */
-  printf("Attempting DHCP IP acquisition...\r\n");
-  
-  while (retryCount < maxRetries) {
-    startTime = HAL_GetTick();
-    
-    /* Process DHCP until timeout */
-    while ((HAL_GetTick() - startTime) < timeoutMs) {
-      /* Call DHCP process function */
-      ip_status_t status = w5500_dhcp_process();
-      
-      /* Handle DHCP timer (should be called once per second) */
-      static uint32_t lastDhcpTimer = 0;
-      if ((HAL_GetTick() - lastDhcpTimer) >= 1000) {
-        w5500_dhcp_time_handler();
-        lastDhcpTimer = HAL_GetTick();
-      }
-      
-      /* If IP assigned successfully, we're done */
-      if (status == IP_STATUS_ASSIGNED || status == IP_STATUS_CHANGED) {
-        /* Get and display network information */
-        w5500_dhcp_get_ip(ipAddr);
-        w5500_dhcp_get_subnet(subnetMask);
-        w5500_dhcp_get_gateway(gateway);
-        
-        printf("DHCP Success: IP=%d.%d.%d.%d\r\n", ipAddr[0], ipAddr[1], ipAddr[2], ipAddr[3]);
-        printf("Subnet=%d.%d.%d.%d\r\n", subnetMask[0], subnetMask[1], subnetMask[2], subnetMask[3]);
-        printf("Router IP=%d.%d.%d.%d\r\n", gateway[0], gateway[1], gateway[2], gateway[3]);
-        
-        return true;
-      }
-      
-      /* If conflict or failure, try again */
-      if (status == IP_STATUS_CONFLICT || status == IP_STATUS_FAILED) {
-        break;
-      }
-      
-      /* Small delay to prevent CPU hogging */
-      osDelayDelay(100);
-    }
-    
-    retryCount++;
-    printf("DHCP attempt %d failed, retrying...\r\n", retryCount);
-  }
-  
-  /* Step 4: Fall back to static IP if DHCP failed */
-  printf("DHCP failed after %d attempts. Using static IP configuration.\r\n", maxRetries);
-  
-  /* Get static configuration from eth_config.h */
-  uint8_t staticIp[] = ETH_CONFIG_IP;
-  uint8_t staticSubnet[] = ETH_CONFIG_SUBNET;
-  uint8_t staticGateway[] = ETH_CONFIG_GATEWAY;
-  
-  /* Apply static configuration */
-  wiz_NetInfo netInfo;
-  memcpy(netInfo.mac, ETH_CONFIG_MAC, 6);
-  memcpy(netInfo.ip, staticIp, 4);
-  memcpy(netInfo.sn, staticSubnet, 4);
-  memcpy(netInfo.gw, staticGateway, 4);
-  memcpy(netInfo.dns, ETH_CONFIG_DNS, 4);
-  netInfo.dhcp = NETINFO_STATIC;
-  
-  /* Apply configuration to W5500 */
-  wizchip_setnetinfo(&netInfo);
-  
-  printf("Static IP configuration: %d.%d.%d.%d\r\n", 
-         staticIp[0], staticIp[1], staticIp[2], staticIp[3]);
-  printf("Router IP: %d.%d.%d.%d\r\n", 
-         staticGateway[0], staticGateway[1], staticGateway[2], staticGateway[3]);
-  
-  /* Return success for static fallback */
-  return true;
-}
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartTask00 */
@@ -759,7 +695,8 @@ void StartTask01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(100);
+	w5500_dhcp_task10ms();
+    osDelay(10);
   }
   /* USER CODE END StartTask01 */
 }
@@ -777,6 +714,8 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	//w5500_icmp_task100ms();
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
     osDelay(100);
   }
   /* USER CODE END StartTask02 */
@@ -795,8 +734,7 @@ void StartTask03(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
+	w5500_dhcp_task1000ms();
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
     osDelay(1000);
   }

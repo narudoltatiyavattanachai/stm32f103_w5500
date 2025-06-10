@@ -17,11 +17,10 @@
 #ifndef _W5500_H_
 #define _W5500_H_
 
+#include <stdint.h> // For uint8_t
 #include <stdbool.h>
-#include <stdint.h>
-
-/* STM32 HAL includes */
-#include "stm32f1xx_hal.h"
+#include <string.h>
+#include "stm32f1xx_hal.h" // For HAL (if needed)
 
 /* WIZnet driver includes */
 #include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
@@ -40,8 +39,9 @@
 #define W5500_CS_Pin         GPIO_PIN_12
 #define W5500_CS_GPIO_Port   GPIOB
 
-#define _WIZCHIP_                W5500
-#define _WIZCHIP_IO_MODE_        _WIZCHIP_IO_MODE_SPI_VDM_
+#define _WIZCHIP_            W5500
+#define _WIZCHIP_IO_MODE_    _WIZCHIP_IO_MODE_SPI_VDM_
+
 
 
 /* ==========================================================================

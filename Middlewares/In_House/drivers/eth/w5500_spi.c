@@ -29,7 +29,7 @@
 #include <cmsis_os2.h>
 
 /* W5500 hardware interface header */
-#include "w5500.h"
+#include "w5500_spi.h"
 #include "eth_config.h"
 
 /* Hardware abstraction defines */
@@ -54,6 +54,8 @@
 /* ==========================================================================
  * PRIVATE VARIABLES
  * ==========================================================================*/
+
+extern SPI_HandleTypeDef hspi2;
 
 /* ==========================================================================
  * PRIVATE FUNCTION PROTOTYPES

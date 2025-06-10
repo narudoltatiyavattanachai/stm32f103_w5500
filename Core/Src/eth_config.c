@@ -1,6 +1,18 @@
 #include "eth_config.h"
 #include <string.h> // Required for memcpy
 
+
+/*============================================================================*/
+/*                         W5500 HARDWARE PIN DEFINITIONS                     */
+/*============================================================================*/
+
+/* W5500 Ethernet Controller Pin Definitions */
+//#define ETH_CONFIG_DHCP_SOCKET    1
+
+
+/*============================================================================*/
+/*                         W5500 HARDWARE PIN DEFINITIONS                     */
+/*============================================================================*/
 /**
  * @brief Global network information structure instance.
  * This is the actual definition of the extern variable declared in eth_config.h.

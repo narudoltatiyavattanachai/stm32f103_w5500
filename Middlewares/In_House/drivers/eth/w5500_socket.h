@@ -1,20 +1,39 @@
+// Modified w5500_socket.h content
+
 /**
  * @file    w5500_socket.h
  * @brief   Socket API wrapper for W5500 Ethernet controller
  * @author  Narudol T.
  * @date    2025-06-10
- * 
+ *
  * @details This file provides wrapper functions around the WIZnet socket API
- *          to simplify application code and create a consistent interface.
- *          The socket API is designed to be protocol-agnostic where possible,
- *          with specialized functions for UDP and TCP operations.
+ * to simplify application code and create a consistent interface.
+ * The socket API is designed to be protocol-agnostic where possible,
+ * with specialized functions for UDP and TCP operations.
  */
 
 #ifndef W5500_SOCKET_H
 #define W5500_SOCKET_H
 
-#include <stdint.h>
+#include <stdint.h> // For uint8_t
 #include <stdbool.h>
+#include <string.h>
+#include "stm32f1xx_hal.h" // For HAL (if needed)
+
+
+#include "w5500_spi.h"  // Must come first to set _WIZCHIP_ macro
+#include "eth_config.h"
+#include "w5500_socket.h"
+
+// Include WIZnet library headers
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/W5500/w5500.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
+
+/**
+ * @brief Maximum number of sockets supported by W5500
+ */
+#define W5500_MAX_SOCKET 8
 
 /**
  * @brief Socket type enumeration
@@ -36,82 +55,94 @@ typedef enum {
 } w5500_sock_error_t;
 
 /*============================================================================*/
-/*                         SOCKET MANAGEMENT                                  */
+/* SOCKET INITIALIZATION/DEINITIALIZATION             */
 /*============================================================================*/
 
 /**
- * @brief Creates and opens a new socket
- * 
- * @param sock_num  Socket number (0-7 for W5500)
- * @param type      Socket type (TCP/UDP)
- * @param port      Local port number
- * @return int8_t   Socket number on success, negative error code on failure
+ * @brief Open a socket and initialize it
+ *
+ * @param sock_num  Socket number (0-7)
+ * @param type      Socket type (TCP or UDP)
+ * @param port      Port number to bind to
+ * @return int8_t   W5500_SOCK_OK on success, negative error code on failure
  */
 int8_t w5500_socket_open(uint8_t sock_num, w5500_sock_type_t type, uint16_t port);
 
 /**
  * @brief Close a socket
- * 
- * @param sock_num  Socket number to close
- * @return int8_t   0 on success, negative error code on failure
+ *
+ * @param sock_num  Socket number
+ * @return int8_t   W5500_SOCK_OK on success, negative error code on failure
  */
 int8_t w5500_socket_close(uint8_t sock_num);
 
 /**
- * @brief Set socket option
- * 
- * @param sock_num     Socket number
- * @param option_type  Option type code
- * @param option_value Pointer to option value
- * @return int8_t      0 on success, negative error code on failure
+ * @brief Set a socket option
+ *
+ * @param sock_num      Socket number
+ * @param option_type   Type of option to set (e.g., SO_SENDBUF, SO_RCVBUF)
+ * @param option_value  Pointer to the value to set
+ * @return int8_t       W5500_SOCK_OK on success, negative error code on failure
  */
 int8_t w5500_socket_setsockopt(uint8_t sock_num, uint8_t option_type, void *option_value);
 
 /**
- * @brief Get socket option
- * 
- * @param sock_num     Socket number
- * @param option_type  Option type code
- * @param option_value Pointer to store option value
- * @return int8_t      0 on success, negative error code on failure
+ * @brief Get a socket option
+ *
+ * @param sock_num      Socket number
+ * @param option_type   Type of option to get
+ * @param option_value  Pointer to store the option value
+ * @return int8_t       W5500_SOCK_OK on success, negative error code on failure
  */
 int8_t w5500_socket_getsockopt(uint8_t sock_num, uint8_t option_type, void *option_value);
 
 /*============================================================================*/
-/*                         TCP SOCKET OPERATIONS                              */
+/* TCP SPECIFIC OPERATIONS                            */
 /*============================================================================*/
 
 /**
  * @brief Connect a TCP socket to a remote host
- * 
- * @param sock_num    Socket number
- * @param dest_ip     Destination IP address (4 bytes)
- * @param dest_port   Destination port number
- * @return int8_t     0 on success, negative error code on failure
+ *
+ * @param sock_num  Socket number
+ * @param dest_ip   Destination IP address (4 bytes)
+ * @param dest_port Destination port
+ * @return int8_t   W5500_SOCK_OK on success, negative error code on failure
  */
 int8_t w5500_socket_connect(uint8_t sock_num, const uint8_t* dest_ip, uint16_t dest_port);
 
 /**
- * @brief Listen for incoming connections on a TCP socket
- * 
- * @param sock_num    Socket number
- * @return int8_t     0 on success, negative error code on failure
+ * @brief Disconnect a TCP socket (Graceful close for TCP)
+ *
+ * @param sock_num Socket number
+ * @return int8_t W5500_SOCK_OK on success, negative error code on failure
+ */
+int8_t w5500_disconnect(uint8_t sock_num);
+
+/**
+ * @brief Listen for incoming TCP connections
+ *
+ * @param sock_num  Socket number
+ * @return int8_t   W5500_SOCK_OK on success, negative error code on failure
  */
 int8_t w5500_socket_listen(uint8_t sock_num);
 
+/*============================================================================*/
+/* DATA TRANSFER FUNCTIONS                            */
+/*============================================================================*/
+
 /**
- * @brief Send data on a connected TCP socket
- * 
+ * @brief Send data over a socket (TCP or UDP based on socket type)
+ *
  * @param sock_num  Socket number
- * @param data      Pointer to data buffer
+ * @param buffer    Pointer to data to send
  * @param len       Length of data to send
  * @return int32_t  Number of bytes sent, negative error code on failure
  */
-int32_t w5500_socket_send(uint8_t sock_num, const uint8_t* data, uint16_t len);
+int32_t w5500_socket_send(uint8_t sock_num, const uint8_t* buffer, uint16_t len);
 
 /**
- * @brief Receive data from a connected TCP socket
- * 
+ * @brief Receive data from a socket (TCP or UDP based on socket type)
+ *
  * @param sock_num  Socket number
  * @param buffer    Buffer to store received data
  * @param maxlen    Maximum length of buffer
@@ -119,26 +150,22 @@ int32_t w5500_socket_send(uint8_t sock_num, const uint8_t* data, uint16_t len);
  */
 int32_t w5500_socket_recv(uint8_t sock_num, uint8_t* buffer, uint16_t maxlen);
 
-/*============================================================================*/
-/*                         UDP SOCKET OPERATIONS                              */
-/*============================================================================*/
-
 /**
- * @brief Send data to a specific destination via UDP
- * 
- * @param sock_num   Socket number
- * @param data       Pointer to data buffer
- * @param len        Length of data to send
- * @param dest_ip    Destination IP address (4 bytes)
- * @param dest_port  Destination port number
- * @return int32_t   Number of bytes sent, negative error code on failure
+ * @brief Send data to a UDP socket with destination information
+ *
+ * @param sock_num  Socket number
+ * @param buffer    Pointer to data to send
+ * @param len       Length of data to send
+ * @param dest_ip   Destination IP address (4 bytes)
+ * @param dest_port Destination port
+ * @return int32_t  Number of bytes sent, negative error code on failure
  */
-int32_t w5500_socket_sendto(uint8_t sock_num, const uint8_t* data, uint16_t len, 
+int32_t w5500_socket_sendto(uint8_t sock_num, const uint8_t* buffer, uint16_t len,
                             const uint8_t* dest_ip, uint16_t dest_port);
 
 /**
  * @brief Receive data from a UDP socket with source information
- * 
+ *
  * @param sock_num  Socket number
  * @param buffer    Buffer to store received data
  * @param maxlen    Maximum length of buffer
@@ -146,16 +173,16 @@ int32_t w5500_socket_sendto(uint8_t sock_num, const uint8_t* data, uint16_t len,
  * @param src_port  Pointer to store source port
  * @return int32_t  Number of bytes received, negative error code on failure
  */
-int32_t w5500_socket_recvfrom(uint8_t sock_num, uint8_t* buffer, uint16_t maxlen, 
+int32_t w5500_socket_recvfrom(uint8_t sock_num, uint8_t* buffer, uint16_t maxlen,
                               uint8_t* src_ip, uint16_t* src_port);
 
 /*============================================================================*/
-/*                         SOCKET STATUS                                      */
+/* SOCKET STATUS                                      */
 /*============================================================================*/
 
 /**
  * @brief Check if a TCP socket is connected
- * 
+ *
  * @param sock_num  Socket number
  * @return bool     true if connected, false otherwise
  */
@@ -163,18 +190,26 @@ bool w5500_socket_is_connected(uint8_t sock_num);
 
 /**
  * @brief Get socket status
- * 
+ *
  * @param sock_num  Socket number
  * @return uint8_t  Socket status code (see socket.h for Sn_SR_* defines)
  */
 uint8_t w5500_socket_get_status(uint8_t sock_num);
 
 /**
- * @brief Get the amount of data available to be read on a socket
- * 
+ * @brief Get the amount of free transmit buffer size on a socket
+ *
  * @param sock_num  Socket number
- * @return uint16_t Number of bytes available to read, 0 if none
+ * @return uint16_t Free TX buffer size in bytes
  */
-uint16_t w5500_socket_available(uint8_t sock_num);
+uint16_t w5500_socket_get_tx_buf_free_size(uint8_t sock_num);
 
-#endif /* W5500_SOCKET_H */
+/**
+ * @brief Get the amount of received data in the RX buffer of a socket
+ *
+ * @param sock_num  Socket number
+ * @return uint16_t RX buffer size in bytes
+ */
+uint16_t w5500_socket_get_rx_buf_size(uint8_t sock_num);
+
+#endif // W5500_SOCKET_H

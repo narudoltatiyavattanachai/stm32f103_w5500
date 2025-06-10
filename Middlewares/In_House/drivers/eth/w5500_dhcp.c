@@ -6,10 +6,12 @@
 /*============================================================================*/
 
 #include "w5500_dhcp.h"
+#include "w5500_spi.h"
 #include "w5500_socket.h"
-#include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
-#include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
-#include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Internet/DHCP/dhcp.h"
+#include "eth_config.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Internet/DHCP/dhcp.h"
 #include "eth_config.h"
 #include <string.h>
 #include <stdio.h>
@@ -35,6 +37,7 @@
 static uint8_t dhcp_retry = 0;
 static bool ip_assigned_flag = false;
 
+#define ETH_CONFIG_DHCP_SOCKET  0
 static uint8_t dhcp_buffer[548];
 static uint8_t dhcp_socket = ETH_CONFIG_DHCP_SOCKET;
 
@@ -73,14 +76,22 @@ static void on_dhcp_conflict(void)
 /*                         PUBLIC API IMPLEMENTATION                          */
 /*============================================================================*/
 
-void w5500_dhcp_init(void)
+bool w5500_dhcp_init(void)
 {
+    if (dhcp_socket >= W5500_MAX_SOCKET) {
+        DEBUG_PRINT("[DHCP] Error: Invalid socket number %d\r\n", dhcp_socket);
+        return false;
+    }
+
+    // DHCP_init is void and cannot fail, so we don't check its return value
     DHCP_init(dhcp_socket, dhcp_buffer);
+
     reg_dhcp_cbfunc(on_dhcp_assigned, on_dhcp_assigned, on_dhcp_conflict);
     ip_assigned_flag = false;
     dhcp_retry = 0;
 
     DEBUG_PRINT("[DHCP] DHCP client initialized on socket %d.\r\n", dhcp_socket);
+    return true;
 }
 
 void w5500_dhcp_task1000ms(void)

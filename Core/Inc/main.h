@@ -32,6 +32,25 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <stdint.h> // For uint8_t
+#include <stdbool.h>
+#include <string.h>
+#include "stm32f1xx_hal.h" // For HAL (if needed)
+
+#include "usb_device.h"
+#include "usbd_cdc_if.h"
+
+
+#include "eth_config.h"
+#include "../../../Middlewares/In_House/drivers/eth/w5500_spi.h"
+#include "../../../Middlewares/In_House/drivers/eth/w5500_dhcp.h"
+#include "../../../Middlewares/In_House/drivers/eth/w5500_icmp.h"
+
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/W5500/w5500.h"
+#include "../../../Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Internet/DHCP/dhcp.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

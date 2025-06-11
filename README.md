@@ -1,11 +1,17 @@
 <div align="center">
-  <img src="docs/pics/Demo_Board.png" alt="Demo Board" style="max-width: 80%; height: auto;">
   <h1>W5500 Ethernet Evaluation with STM32F103C8T6</h1>
 </div>
 
 ## Next-Gen Edge Node for Smart Traffic Systems
 
 This industrial-grade edge node solution revolutionizes traffic management by bringing powerful ROS 2 capabilities to the network edge. Built on the reliable STM32F103C8T6 microcontroller and W5500 Ethernet controller, it delivers real-time processing and decision-making where its cost matters most.
+
+<div align="center">
+
+  <img src="docs/pics/Demo_Board.png" alt="Demo Board" style="max-width: 80%; height: auto;">
+</div>
+
+
 
 ### Why Choose Our Edge Node?
 

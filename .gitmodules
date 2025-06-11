@@ -1,3 +1,6 @@
 [submodule "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0"]
 	path = Middlewares/Third_Party/ioLibrary_Driver_v3.2.0
 	url = https://github.com/Wiznet/ioLibrary_Driver.git
+[submodule "Middlewares/Third_Party/micro_ros_stm32cubemx_utils"]
+	path = Middlewares/Third_Party/micro_ros_stm32cubemx_utils
+	url = https://github.com/micro-ROS/micro_ros_stm32cubemx_utils.git

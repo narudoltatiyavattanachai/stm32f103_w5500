@@ -1,24 +1,208 @@
-# W5500 Ethernet Evaluation with STM32F103C8T6 using CMSIS V2 and micro-ROS
+# W5500 Ethernet Evaluation with STM32F103C8T6
 
 ## Overview
 
-This project is designed to evaluate the W5500 Ethernet chip with the STM32F103C8T6 microcontroller using SPI2 interface and CMSIS V2. The W5500 is a hardwired TCP/IP embedded Ethernet controller that provides Internet connectivity for embedded systems using SPI communication. This evaluation platform demonstrates how to properly configure and use the W5500 with STM32F103C8T6 for robust Ethernet connectivity.
+This project implements a robust Ethernet communication system using the W5500 Ethernet controller with the STM32F103C8T6 microcontroller. It features a complete TCP/IP stack, FreeRTOS integration, and micro-ROS support, making it an ideal solution for IoT and embedded systems requiring network connectivity.
 
-The project now includes a custom transport layer for micro-ROS, enabling ROS 2 communication capabilities over Ethernet using the W5500 chip. This allows the STM32F103 to function as a ROS 2 node, publishing and subscribing to topics within a ROS 2 network.
+The implementation includes a custom transport layer for micro-ROS, enabling seamless integration with ROS 2 ecosystems. This allows the STM32F103 to function as a ROS 2 node, capable of publishing and subscribing to topics over Ethernet.
 
-## Features
+## Key Features
 
-- **STM32F103C8T6 MCU**: ARM Cortex-M3 based 72MHz microcontroller
-- **W5500 Ethernet Chip**: Hardware TCP/IP embedded Ethernet controller
-- **SPI2 Interface**: Communication between STM32F103 and W5500
-- **CMSIS V2**: Cortex Microcontroller Software Interface Standard V2
-- **FreeRTOS**: Real-time operating system implementation
-- **5 Sockets**: TCP/UDP socket communication capability
-- **Hardware TCP/IP Stack**: Offloads TCP/IP processing from the MCU
-- **micro-ROS Integration**: Custom W5500 transport layer for ROS 2 communication
-- **ROS 2 Humble Support**: Compatible with ROS 2 Humble Hawksbill distribution
+### Hardware
+- **STM32F103C8T6**: 72MHz ARM Cortex-M3 microcontroller with 64KB Flash, 20KB SRAM
+- **W5500 Ethernet Controller**: Hardware TCP/IP stack with 8 independent sockets
+- **SPI2 Interface**: High-speed communication between MCU and W5500
+- **Integrated PHY**: Simplifies hardware design
+
+### Software
+- **FreeRTOS**: Real-time operating system for task management
+- **CMSIS V2**: Standardized interface for Cortex-M processors
+- **Hardware Abstraction Layer (HAL)**: STM32CubeMX generated code
+- **ITM Console**: Debug console over SWD interface
+- **USB DFU Support**: Firmware updates over USB
+
+### Networking
+- **Static & DHCP Support**: Flexible network configuration
+- **TCP/UDP Protocols**: Full protocol support
+- **Socket API**: Easy-to-use network programming interface
+- **Custom Transport Layer**: For micro-ROS integration
+
+### ROS 2 Integration
+- **micro-ROS Support**: Full ROS 2 node capabilities
+- **ROS 2 Humble Compatible**: Tested with Humble Hawksbill
+- **Custom W5500 Transport**: Optimized for embedded systems
+- **Publisher/Subscriber Model**: Standard ROS 2 communication patterns
+
+## Submodule Management
+
+This project uses Git submodules to manage external dependencies. Here's how to work with them:
+
+### Included Submodules
+
+1. **ioLibrary_Driver_v3.2.0**
+   - Version: v3.2.0
+   - Purpose: Wiznet W5500 Ethernet controller driver
+   - Location: `Middlewares/Third_Party/ioLibrary_Driver_v3.2.0`
+   - Repository: [Wiznet/ioLibrary_Driver](https://github.com/Wiznet/ioLibrary_Driver)
+
+2. **micro_ros_stm32cubemx_utils**
+   - Version: 6.0.0 (compatible with ROS 2 Humble)
+   - Purpose: Utilities for micro-ROS integration with STM32CubeMX
+   - Location: `Middlewares/Third_Party/micro_ros_stm32cubemx_utils`
+   - Repository: [micro-ROS/micro_ros_stm32cubemx_utils](https://github.com/micro-ROS/micro_ros_stm32cubemx_utils)
+
+### Cloning the Repository with Submodules
+
+```bash
+git clone --recursive https://github.com/yourusername/stm32f103_w5500.git
+cd stm32f103_w5500
+```
+
+### Updating Submodules
+
+To update all submodules to their latest committed state:
+
+```bash
+git submodule update --init --recursive
+```
+
+### Switching Submodule Versions
+
+To switch to a specific version of a submodule:
+
+```bash
+# Navigate to the submodule directory
+cd Middlewares/Third_Party/ioLibrary_Driver_v3.2.0
+
+# Checkout the desired version (example)
+git checkout v3.2.0
+
+# Return to project root and commit the update
+cd ../../..
+git add Middlewares/Third_Party/ioLibrary_Driver_v3.2.0
+git commit -m "Update ioLibrary_Driver to v3.2.0"
+```
 
 ## Project Structure
+
+```
+stm32f103_w5500/
+├── Core/                    # Core STM32 application code
+│   ├── Inc/                 # Header files
+│   └── Src/                 # Source files
+│
+├── Drivers/                # STM32 HAL drivers and CMSIS
+│   ├── CMSIS/
+│   └── STM32F1xx_HAL_Driver/
+│
+├── Middlewares/            # Middleware components
+│   ├── Third_Party/
+│   │   ├── ioLibrary_Driver_v3.2.0/     # W5500 driver
+│   │   └── micro_ros_stm32cubemx_utils/  # micro-ROS utilities
+│   └── ST/
+│       └── STM32_USB_Device_Library/     # USB device stack
+│
+├── USB_DEVICE/            # USB Device configuration
+├── .mxproject              # STM32CubeMX project file
+└── README.md               # This file
+```
+
+## Hardware Setup
+
+### Components
+- STM32F103C8T6 Blue Pill board
+- W5500 Ethernet module
+- USB-TTL converter (for debugging)
+- ST-Link V2 programmer
+- Ethernet cable
+
+### Pin Connections
+
+| STM32F103 | W5500 Module |
+|-----------|--------------|
+| 3.3V     | 3.3V         |
+| GND      | GND          |
+| PB13     | SCK          |
+| PB14     | MISO         |
+| PB15     | MOSI         |
+| PB12     | SS           |
+| PB0      | RST          |
+| PB1      | INT          |
+
+
+## Getting Started
+
+### Prerequisites
+- STM32CubeIDE or your preferred ARM development environment
+- ST-Link Utility or OpenOCD for flashing
+- Terminal emulator (PuTTY, Tera Term, or similar)
+- Python 3.x (for additional tools)
+
+### Building the Project
+
+1. Clone the repository with submodules:
+   ```bash
+   git clone --recursive https://github.com/yourusername/stm32f103_w5500.git
+   cd stm32f103_w5500
+   ```
+
+2. Open the project in STM32CubeIDE
+   - Select `File > Import > Existing Projects into Workspace`
+   - Navigate to the project directory and select it
+
+3. Build the project
+   - Right-click on the project in Project Explorer
+   - Select `Build Project` or press `Ctrl+B`
+
+### Flashing the Firmware
+
+1. Connect your ST-Link programmer to the board
+2. In STM32CubeIDE:
+   - Right-click on the project
+   - Select `Debug As > STM32 Cortex-M C/C++ Application`
+   - The debug configuration will be automatically created
+
+### Network Configuration
+
+By default, the device uses the following static IP configuration:
+- IP: 192.168.68.200
+- Netmask: 255.255.255.0
+- Gateway: 192.168.68.1
+- MAC: 00:08:DC:00:00:01
+
+To change these settings, modify the `eth_config_init_static()` function in `Core/Src/eth_config.c`.
+
+## Using micro-ROS
+
+The project includes micro-ROS support with a custom W5500 transport layer. To use micro-ROS:
+
+1. Set up a ROS 2 environment on your host machine
+2. Start the micro-ROS agent:
+   ```bash
+   ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
+   ```
+3. The STM32 will automatically connect to the agent on startup
+
+## Debugging
+
+### ITM Console
+For debugging output, connect an SWD debugger and use the ITM console:
+1. Open a terminal emulator at 115200 baud
+2. Connect to the ITM port (usually COMx in Windows)
+3. Debug messages will be displayed in real-time
+
+### LED Indicators
+- **LED1 (PC13)**: Heartbeat (1Hz blink when running)
+- **LED2 (PA1)**: Ethernet link status
+- **LED3 (PA2)**: Network activity
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ```
 │
@@ -64,57 +248,13 @@ The project now includes a custom transport layer for micro-ROS, enabling ROS 2 
 ### STM32F103C8T6 to W5500 Connections
 
 | STM32F103 Pin | W5500 Pin | Description |
-|---------------|-----------|-------------|
-| PB13 (SPI2_SCK)  | SCLK     | SPI Clock   |
-| PB14 (SPI2_MISO) | MISO     | Master In Slave Out |
-| PB15 (SPI2_MOSI) | MOSI     | Master Out Slave In |
-| PB12          | SCSn     | Chip Select (Active Low) |
-| 3.3V          | VCC      | Power Supply |
-| GND           | GND      | Ground      |
-| PA0 (Optional) | RSTn     | Reset (Active Low) |
+## Contributing
 
-## Software Implementation
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-### Driver Modifications
+## License
 
-The W5500 driver library (ioLibrary_Driver v3.2.0) has been modified to work with the STM32F103C8T6 using SPI2. Key modifications include:
-
-1. Implementation of chip select/deselect functions using PB12
-2. SPI read/write functions using STM32 HAL SPI APIs
-3. Integration with CMSIS V2 for better interrupt handling
-
-### Configuration
-
-- **SPI2 Configuration**: 18MHz clock, Master mode, 8-bit data size
-- **W5500 Network Settings**: DHCP or static IP configuration supported
-- **FreeRTOS**: Task-based approach for network operations
-- **Socket Usage**: Multiple TCP/UDP sockets for different purposes
-
-## Building and Running
-
-### Prerequisites
-
-- STM32CubeIDE or compatible IDE
-- ST-Link V2 or compatible programmer
-- W5500 Ethernet module
-- Ethernet cable and network connection
-
-### Build Steps
-
-1. Clone this repository
-2. Open the project in STM32CubeIDE
-3. Build the project
-4. Flash to the STM32F103C8T6 board
-5. Connect the W5500 module to your network
-
-### Testing
-
-The evaluation project includes:
-
-- Basic connectivity test
-- Socket communication examples
-- Performance measurements
-- Reliability testing
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## References
 
@@ -122,79 +262,6 @@ The evaluation project includes:
 - [STM32F103 Reference Manual](https://www.st.com/resource/en/reference_manual/cd00171190-stm32f101xx-stm32f102xx-stm32f103xx-stm32f105xx-and-stm32f107xx-advanced-arm-based-32-bit-mcus-stmicroelectronics.pdf)
 - [CMSIS V2 Documentation](https://arm-software.github.io/CMSIS_5/General/html/index.html)
 - [ioLibrary_Driver GitHub](https://github.com/Wiznet/ioLibrary_Driver)
-
-## micro-ROS Integration
-
-### Features
-
-- Custom W5500 transport layer for micro-ROS
-- Compatible with ROS 2 Humble Hawksbill
-- Supports TCP/IP communication with micro-ROS agent
-- Integrated with STM32 HAL drivers
-- Example publisher/subscriber implementation
-
-### Building micro-ROS Library
-
-1. Navigate to the micro-ROS utilities directory:
-   ```bash
-   cd Middlewares/Third_Party/micro_ros_stm32cubemx_utils
-   ```
-
-2. Run the build script for W5500 transport:
-   ```bash
-   build_w5500_microros_lib.bat
-   ```
-   
-   This script uses Docker to build the micro-ROS static library with W5500 transport support.
-
-3. After building, the following files will be available:
-   - `libmicroros.a`: The micro-ROS static library
-   - `include/`: Directory containing micro-ROS header files
-
-### Integration Steps
-
-1. Add the generated `libmicroros.a` to your project's linker settings
-2. Add the `include/` directory to your include paths
-3. Configure the W5500 hardware (SPI, GPIO) in STM32CubeIDE
-4. Modify the network settings in `sample_main_w5500.c` as needed
-5. Add the micro-ROS task to your FreeRTOS configuration
-
-### Using micro-ROS with W5500
-
-The `w5500_transport.c` implementation provides a complete transport layer that handles:
-
-- W5500 hardware initialization
-- Network configuration (IP, subnet, gateway)
-- Socket management for micro-ROS communication
-- Integration with micro-ROS middleware
-
-Example usage:
-
-```c
-// Configure W5500 transport for micro-ROS
-uint8_t transport_args[6] = {192, 168, 1, 10, 0x22, 0xB8}; // Agent IP & Port
-
-// Set custom transport
-rmw_uros_set_custom_transport(
-  true,
-  (void *) &transport_args,
-  cubemx_transport_open,
-  cubemx_transport_close,
-  cubemx_transport_write,
-  cubemx_transport_read
-);
-
-// Initialize micro-ROS
-rcl_allocator_t allocator = rcl_get_default_allocator();
-rclc_support_t support;
-rclc_support_init(&support, 0, NULL, &allocator);
-
-// Create node, publishers, subscribers, etc.
-// [...]
-```
-
-See `sample_main_w5500.c` for a complete working example.
-
-## License
-
-This project is released under the MIT License.
+- [micro-ROS Documentation](https://micro.ros.org/)
+- [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html)
+For detailed information about micro-ROS integration, please refer to the [micro-ROS documentation](https://micro.ros.org/).

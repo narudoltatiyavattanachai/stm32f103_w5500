@@ -45,6 +45,10 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+uint32_t task00 = 0;
+uint32_t task01 = 0;
+uint32_t task02 = 0;
+uint32_t task03 = 0;
 
 /* USER CODE END Variables */
 /* Definitions for Task00_1ms */
@@ -153,6 +157,8 @@ void StartTask00(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	task00++;
+    //printf("Task01: %lu\n", (unsigned long)task00);
     osDelay(1);
   }
   /* USER CODE END StartTask00 */
@@ -171,7 +177,9 @@ void StartTask01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	task01++;
+	//printf("Task01: %lu\n", (unsigned long)task01);
+    osDelay(10);
   }
   /* USER CODE END StartTask01 */
 }
@@ -189,7 +197,10 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	task02++;
+	//printf("Task01: %lu\n", (unsigned long)task02);
+	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
+    osDelay(100);
   }
   /* USER CODE END StartTask02 */
 }
@@ -207,7 +218,10 @@ void StartTask03(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	task03++;
+	printf("Task01: %lu\n", (unsigned long)task03);
+	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
+    osDelay(1000);
   }
   /* USER CODE END StartTask03 */
 }

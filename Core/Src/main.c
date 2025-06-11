@@ -29,7 +29,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-/* W5500 and DHCP includes */
+
 
 
 /* USER CODE END Includes */
@@ -52,7 +52,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+int count=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,7 +75,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  count++; // count = 1
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -84,14 +84,14 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  count++; // count = 2
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  count++; // count = 3
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -103,29 +103,36 @@ int main(void)
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("\r\nStarting W5500 initialization...\r\n");
+  count++; // count = 4
+
   
+
   // Initialize W5500 hardware
+  printf("\r\nStarting W5500 initialization...\r\n");
   printf("Calling w5500_init()...\r\n");
-  w5500_init();
+  //w5500_init();
+  count++; // count = 5
   
   // Add a small delay after W5500 reset
   HAL_Delay(100);
+  count++; // count = 6
   
-  printf("W5500 initialized. Initializing DHCP...\r\n");
+
   
   // Initialize DHCP client
-  if (!w5500_dhcp_init()) {
-    printf("Failed to initialize DHCP!\r\n");
-    Error_Handler();
-  }
+
+  //w5500_dhcp_init();
+
+  count++; // count = 7
   
-  printf("DHCP initialization complete. Starting RTOS...\r\n");
+
   
-  // Keep ICMP disabled for now
+
   //w5500_icmp_init();
-  
-  printf("Initialization complete. Starting RTOS scheduler...\r\n");
+  count++; // count = 8
+
+
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -169,7 +176,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -184,13 +191,13 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_USB;
-  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV4;
-  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();

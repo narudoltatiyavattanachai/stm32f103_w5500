@@ -35,12 +35,11 @@ extern "C" {
 #include <stdint.h> // For uint8_t
 #include <stdbool.h>
 #include <string.h>
-#include "stm32f1xx_hal.h" // For HAL (if needed)
 
-#include "usb_device.h"
-#include "usbd_cdc_if.h"
+//#include "usb_device.h"
+//#include "usbd_cdc_if.h"
 
-
+#include "itm_console.h"
 #include "eth_config.h"
 #include "../../../Middlewares/In_House/drivers/eth/w5500_spi.h"
 #include "../../../Middlewares/In_House/drivers/eth/w5500_dhcp.h"

@@ -1,82 +1,57 @@
-<div align="center">
-  <h1>W5500 Ethernet Evaluation with STM32F103C8T6</h1>
-</div>
-
-## Next-Gen Edge Node for Smart Traffic Systems
-
-This industrial-grade edge node solution revolutionizes traffic management by bringing powerful ROS 2 capabilities to the network edge. Built on the reliable STM32F103C8T6 microcontroller and W5500 Ethernet controller, it delivers real-time processing and decision-making where its cost matters most.
+# Smart Traffic Edge Node with STM32F103 & W5500
 
 <div align="center">
-
-  <img src="docs/pics/Demo_Board.png" alt="Demo Board" width="600" style="display: block; margin: 0 auto;">
+  <img src="docs/pics/Demo_Board.png" alt="Demo Board" width="400" style="display: block; margin: 0 auto;">
 </div>
 
+An industrial-grade edge node solution for smart traffic management, combining STM32F103C8T6 and W5500 Ethernet with ROS 2 capabilities for real-time processing and decision-making.
 
+## Purpose
 
-### Why Choose Our Edge Node?
+This solution revolutionizes traffic management by bringing powerful ROS 2 capabilities to the network edge, enabling:
+- Real-time traffic monitoring and control
+- Local processing for reduced latency
+- Seamless integration with smart city infrastructure
+- Reliable operation in harsh environments
 
-🚦 **Proven Reliability**
-- Industrial-grade components ensure 24/7 operation in harsh environments
-- Hardware-accelerated TCP/IP stack guarantees consistent communication
-- Built-in watchdog and fail-safe mechanisms for maximum uptime
+## Features
 
-⚡ **Real-Time Performance**
-- Near-zero latency decision making at the edge
-- Deterministic response times with FreeRTOS
-- Local processing reduces cloud dependency and bandwidth costs
+- **Hardware**
+  - STM32F103C8T6 (72MHz Cortex-M3)
+  - W5500 Ethernet controller with hardware TCP/IP
+  - Industrial-grade components for 24/7 operation
 
-🌐 **Seamless Integration**
-- Native ROS 2 support for easy system integration
-- Standard Ethernet connectivity for flexible deployment
-- Compatible with existing smart city infrastructure
+- **Software**
+  - FreeRTOS for real-time operations
+  - micro-ROS for ROS 2 integration
+  - Watchdog and fail-safe mechanisms
 
-### Key Benefits
+- **Networking**
+  - Static & DHCP support
+  - TCP/UDP protocols
+  - Secure communication channels
 
-- **Cost-Effective**
-  - Lower total cost of ownership with local processing
-  - Reduced cloud computing and bandwidth expenses
-  - Minimal maintenance requirements
+## Quick Start
 
-- **Future-Proof**
-  - Modular design for easy upgrades
-  - Supports over-the-air (OTA) firmware updates
-  - Scalable architecture for growing infrastructure needs
+1. **Clone the repository**
+   ```bash
+   git clone --recursive https://github.com/yourusername/stm32f103_w5500.git
+   cd stm32f103_w5500
+   ```
 
-- **Deployment Ready**
-  - Compact, low-power design
-  - Wide operating temperature range
-  - Easy installation and configuration
+2. **Update submodules**
+   ```bash
+   git submodule update --init --recursive
+   ```
 
-### Key Objectives
+3. **Open in your IDE**
+   - Open the project in STM32CubeIDE
+   - Build and flash to your board
 
-1. **Distributed Traffic Control**
-   - Local processing at the edge for reduced latency
-   - Decentralized decision making for improved reliability
-   - Seamless integration with central traffic management systems
-
-2. **Real-time Data Acquisition**
-   - Interface with various traffic sensors (vehicle detection, pedestrian counters)
-   - Environmental monitoring (air quality, weather conditions)
-   - Traffic signal status and timing
-
-3. **Communication Capabilities**
-   - Reliable Ethernet-based communication using W5500
-   - ROS 2 middleware for standardized messaging
-   - Support for both wired and future wireless backhaul options
-   - Secure communication channels for data integrity
-
-4. **System Features**
-   - Low-power operation for energy efficiency
-   - Remote firmware updates (DFU over USB/Ethernet)
-   - Local logging and diagnostics
-   - Fail-safe operation with watchdog timers
-   - Hot-swappable modules for easy maintenance
-
-### System Architecture
+## System Architecture
 
 ```
-┌───────────────────────────────────────────────────────────────────────┐
-│                      Central Traffic Management                      │
+┌───────────────────────────────────────────────────────────────────────�n│                      Central Traffic Management                      │
 │  ┌───────────────┐    ┌────────────────┐    ┌──────────────────┐  │
 │  │  Cloud/Server │◄───┤  Edge Router    │◄───┤  Local Network   │  │
 │  └───────────────┘    └────────────────┘    └──────────────────┘  │
@@ -97,107 +72,28 @@ This industrial-grade edge node solution revolutionizes traffic management by br
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-### Future Expansion
-
-- Integration with V2X (Vehicle-to-Everything) communication
-- Support for additional sensor types and protocols
-- Edge AI capabilities for local traffic pattern analysis
-- Solar power integration for remote deployment
-- 5G/LoRaWAN connectivity options
-
-
-### Hardware
-- **STM32F103C8T6**: 72MHz ARM Cortex-M3 microcontroller with 64KB Flash, 20KB SRAM
-- **W5500 Ethernet Controller**: Hardware TCP/IP stack with 8 independent sockets
-- **SPI2 Interface**: High-speed communication between MCU and W5500
-- **Integrated PHY**: Simplifies hardware design
-
-### Software
-- **FreeRTOS**: Real-time operating system for task management
-- **CMSIS V2**: Standardized interface for Cortex-M processors
-- **Hardware Abstraction Layer (HAL)**: STM32CubeMX generated code
-- **ITM Console**: Debug console over SWD interface
-- **USB DFU Support**: Firmware updates over USB
-
-### Networking
-- **Static & DHCP Support**: Flexible network configuration
-- **TCP/UDP Protocols**: Full protocol support
-- **Socket API**: Easy-to-use network programming interface
-- **Custom Transport Layer**: For micro-ROS integration
-
-### ROS 2 Integration
-- **micro-ROS Support**: Full ROS 2 node capabilities
-- **ROS 2 Humble Compatible**: Tested with Humble Hawksbill
-- **Custom W5500 Transport**: Optimized for embedded systems
-- **Publisher/Subscriber Model**: Standard ROS 2 communication patterns
-
-## Submodule Management
-
-This project uses Git submodules to manage external dependencies. Here's how to work with them:
-
-### Included Submodules
-
-1. **ioLibrary_Driver_v3.2.0**
-   - Version: v3.2.0
-   - Purpose: Wiznet W5500 Ethernet controller driver
-   - Location: `Middlewares/Third_Party/ioLibrary_Driver_v3.2.0`
-   - Repository: [Wiznet/ioLibrary_Driver](https://github.com/Wiznet/ioLibrary_Driver)
-
-2. **micro_ros_stm32cubemx_utils**
-   - Version: 6.0.0 (compatible with ROS 2 Humble)
-   - Purpose: Utilities for micro-ROS integration with STM32CubeMX
-   - Location: `Middlewares/Third_Party/micro_ros_stm32cubemx_utils`
-   - Repository: [micro-ROS/micro_ros_stm32cubemx_utils](https://github.com/micro-ROS/micro_ros_stm32cubemx_utils)
-
-### Cloning the Repository with Submodules
-
-```bash
-git clone --recursive https://github.com/yourusername/stm32f103_w5500.git
-cd stm32f103_w5500
-```
-
-### Updating Submodules
-
-To update all submodules to their latest committed state:
-
-```bash
-git submodule update --init --recursive
-```
-
-### Switching Submodule Versions
-
-To switch to a specific version of a submodule:
-
-```bash
-# Navigate to the submodule directory
-cd Middlewares/Third_Party/ioLibrary_Driver_v3.2.0
-
-# Checkout the desired version (example)
-git checkout v3.2.0
-
-# Return to project root and commit the update
-cd ../../..
-git add Middlewares/Third_Party/ioLibrary_Driver_v3.2.0
-git commit -m "Update ioLibrary_Driver to v3.2.0"
-```
-
 ## Project Structure
 
 ```
 stm32f103_w5500/
-├── Core/                    # Core STM32 application code
-│   ├── Inc/                 # Header files
-│   └── Src/                 # Source files
-│
-├── Drivers/                # STM32 HAL drivers and CMSIS
-│   ├── CMSIS/
-│   └── STM32F1xx_HAL_Driver/
-│
-├── Middlewares/            # Middleware components
-│   ├── Third_Party/
-│   │   ├── ioLibrary_Driver_v3.2.0/     # W5500 driver
-│   │   └── micro_ros_stm32cubemx_utils/  # micro-ROS utilities
-│   └── ST/
+├── Core/                    # Traffic control logic
+├── Drivers/                 # STM32 HAL drivers
+├── Middlewares/             # W5500 and micro-ROS
+└── docs/                    # Documentation
+```
+
+## Dependencies
+
+- STM32CubeMX
+- STM32CubeIDE or your preferred ARM toolchain
+- Terminal emulator (PuTTY, Tera Term, etc.)
+
+## License
+
+[Your License Here]
+
+---
+*Project maintained by [Your Name]*
 │       └── STM32_USB_Device_Library/     # USB device stack
 │
 ├── USB_DEVICE/            # USB Device configuration

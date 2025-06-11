@@ -1,12 +1,104 @@
-# W5500 Ethernet Evaluation with STM32F103C8T6
+<div align="center">
+  <img src="docs/pics/Demo_Board.png" alt="Demo Board" style="max-width: 80%; height: auto;">
+  <h1>W5500 Ethernet Evaluation with STM32F103C8T6</h1>
+</div>
 
-## Overview
+## Next-Gen Edge Node for Smart Traffic Systems
 
-This project implements a robust Ethernet communication system using the W5500 Ethernet controller with the STM32F103C8T6 microcontroller. It features a complete TCP/IP stack, FreeRTOS integration, and micro-ROS support, making it an ideal solution for IoT and embedded systems requiring network connectivity.
+This industrial-grade edge node solution revolutionizes traffic management by bringing powerful ROS 2 capabilities to the network edge. Built on the reliable STM32F103C8T6 microcontroller and W5500 Ethernet controller, it delivers real-time processing and decision-making where its cost matters most.
 
-The implementation includes a custom transport layer for micro-ROS, enabling seamless integration with ROS 2 ecosystems. This allows the STM32F103 to function as a ROS 2 node, capable of publishing and subscribing to topics over Ethernet.
+### Why Choose Our Edge Node?
 
-## Key Features
+🚦 **Proven Reliability**
+- Industrial-grade components ensure 24/7 operation in harsh environments
+- Hardware-accelerated TCP/IP stack guarantees consistent communication
+- Built-in watchdog and fail-safe mechanisms for maximum uptime
+
+⚡ **Real-Time Performance**
+- Near-zero latency decision making at the edge
+- Deterministic response times with FreeRTOS
+- Local processing reduces cloud dependency and bandwidth costs
+
+🌐 **Seamless Integration**
+- Native ROS 2 support for easy system integration
+- Standard Ethernet connectivity for flexible deployment
+- Compatible with existing smart city infrastructure
+
+### Key Benefits
+
+- **Cost-Effective**
+  - Lower total cost of ownership with local processing
+  - Reduced cloud computing and bandwidth expenses
+  - Minimal maintenance requirements
+
+- **Future-Proof**
+  - Modular design for easy upgrades
+  - Supports over-the-air (OTA) firmware updates
+  - Scalable architecture for growing infrastructure needs
+
+- **Deployment Ready**
+  - Compact, low-power design
+  - Wide operating temperature range
+  - Easy installation and configuration
+
+### Key Objectives
+
+1. **Distributed Traffic Control**
+   - Local processing at the edge for reduced latency
+   - Decentralized decision making for improved reliability
+   - Seamless integration with central traffic management systems
+
+2. **Real-time Data Acquisition**
+   - Interface with various traffic sensors (vehicle detection, pedestrian counters)
+   - Environmental monitoring (air quality, weather conditions)
+   - Traffic signal status and timing
+
+3. **Communication Capabilities**
+   - Reliable Ethernet-based communication using W5500
+   - ROS 2 middleware for standardized messaging
+   - Support for both wired and future wireless backhaul options
+   - Secure communication channels for data integrity
+
+4. **System Features**
+   - Low-power operation for energy efficiency
+   - Remote firmware updates (DFU over USB/Ethernet)
+   - Local logging and diagnostics
+   - Fail-safe operation with watchdog timers
+   - Hot-swappable modules for easy maintenance
+
+### System Architecture
+
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│                      Central Traffic Management                      │
+│  ┌───────────────┐    ┌────────────────┐    ┌──────────────────┐  │
+│  │  Cloud/Server │◄───┤  Edge Router    │◄───┤  Local Network   │  │
+│  └───────────────┘    └────────────────┘    └──────────────────┘  │
+└───────────────────────────────────────────────────────────▲──────────┘
+                                                          │
+                                                          │
+┌──────────────────────────────────────────────────────────▼──────────┐
+│                                                                   │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │                     Smart Traffic Node                       │  │
+│  │  ┌─────────────┐    ┌────────────────┐    ┌───────────────┐  │  │
+│  │  │   Sensors   │    │  STM32F103     │    │  W5500        │  │  │
+│  │  │ (Vehicle,   │◄───┤  + FreeRTOS    │◄───┤  Ethernet     │◄─┼──┘
+│  │  │  Pedestrian)│    │  + micro-ROS   │    │  Controller   │  │
+│  │  └─────────────┘    └────────────────┘    └───────────────┘  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+### Future Expansion
+
+- Integration with V2X (Vehicle-to-Everything) communication
+- Support for additional sensor types and protocols
+- Edge AI capabilities for local traffic pattern analysis
+- Solar power integration for remote deployment
+- 5G/LoRaWAN connectivity options
+
 
 ### Hardware
 - **STM32F103C8T6**: 72MHz ARM Cortex-M3 microcontroller with 64KB Flash, 20KB SRAM

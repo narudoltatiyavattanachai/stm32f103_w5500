@@ -8,7 +8,7 @@ This industrial-grade edge node solution revolutionizes traffic management by br
 
 <div align="center">
 
-  <img src="docs/pics/Demo_Board.png" alt="Demo Board" style="max-width: 80%; height: auto;">
+  <img src="docs/pics/Demo_Board.png" alt="Demo Board" width="600" style="display: block; margin: 0 auto;">
 </div>
 
 

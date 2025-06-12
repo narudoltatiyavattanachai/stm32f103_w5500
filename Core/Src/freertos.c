@@ -22,6 +22,7 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
+#include "iwdg.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -158,7 +159,6 @@ void StartTask00(void *argument)
   for(;;)
   {
 	task00++;
-    //printf("Task01: %lu\n", (unsigned long)task00);
     osDelay(1);
   }
   /* USER CODE END StartTask00 */
@@ -178,7 +178,7 @@ void StartTask01(void *argument)
   for(;;)
   {
 	task01++;
-	//printf("Task01: %lu\n", (unsigned long)task01);
+	HAL_IWDG_Refresh(&hiwdg);
     osDelay(10);
   }
   /* USER CODE END StartTask01 */
@@ -198,9 +198,8 @@ void StartTask02(void *argument)
   for(;;)
   {
 	task02++;
-	//printf("Task01: %lu\n", (unsigned long)task02);
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
-    osDelay(100);
+	osDelay(100);
   }
   /* USER CODE END StartTask02 */
 }
@@ -219,9 +218,9 @@ void StartTask03(void *argument)
   for(;;)
   {
 	task03++;
-	printf("Task01: %lu\n", (unsigned long)task03);
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
-    osDelay(1000);
+	printf("Task3_1s: %lu\n", (unsigned long)task03);
+	osDelay(1000);
   }
   /* USER CODE END StartTask03 */
 }

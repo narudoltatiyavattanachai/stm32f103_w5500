@@ -1,76 +1,55 @@
 #include "eth_config.h"
-#include <string.h> // Required for memcpy
+#include <string.h>  // For memcpy
+#include <stdio.h>   // For printf
 
-
-/*============================================================================*/
-/*                         W5500 HARDWARE PIN DEFINITIONS                     */
-/*============================================================================*/
-
-/* W5500 Ethernet Controller Pin Definitions */
-//#define ETH_CONFIG_DHCP_SOCKET    1
-
-
-/*============================================================================*/
-/*                         W5500 HARDWARE PIN DEFINITIONS                     */
-/*============================================================================*/
-/**
- * @brief Global network information structure instance.
- * This is the actual definition of the extern variable declared in eth_config.h.
- */
+// Global network configuration structure
 wiz_NetInfo g_network_info;
 
 /**
- * @brief Initializes the global network information structure with default static values.
+ * @brief Initializes g_network_info with static IP settings from eth_config.h
  */
 void eth_config_init_static(void) {
-    // Default MAC Address
-    g_network_info.mac[0] = 0x00;
-    g_network_info.mac[1] = 0x08;
-    g_network_info.mac[2] = 0xdc;
-    g_network_info.mac[3] = 0x00;
-    g_network_info.mac[4] = 0x00;
-    g_network_info.mac[5] = 0x01;
+    memcpy(g_network_info.mac,     ETH_CONFIG_MAC,     sizeof(g_network_info.mac));
+    memcpy(g_network_info.ip,      ETH_CONFIG_IP,      sizeof(g_network_info.ip));
+    memcpy(g_network_info.sn,      ETH_CONFIG_SUBNET,  sizeof(g_network_info.sn));
+    memcpy(g_network_info.gw,      ETH_CONFIG_GATEWAY, sizeof(g_network_info.gw));
+    memcpy(g_network_info.dns,     ETH_CONFIG_DNS,     sizeof(g_network_info.dns));
 
-    // Static IP Address
-    g_network_info.ip[0] = 192;
-    g_network_info.ip[1] = 168;
-    g_network_info.ip[2] = 68;
-    g_network_info.ip[3] = 200;
-
-    // Subnet Mask
-    g_network_info.sn[0] = 255;
-    g_network_info.sn[1] = 255;
-    g_network_info.sn[2] = 255;
-    g_network_info.sn[3] = 0;
-
-    // Gateway
-    g_network_info.gw[0] = 192;
-    g_network_info.gw[1] = 168;
-    g_network_info.gw[2] = 68;
-    g_network_info.gw[3] = 1;
-
-    // DNS Server
-    g_network_info.dns[0] = 8;
-    g_network_info.dns[1] = 8;
-    g_network_info.dns[2] = 8;
-    g_network_info.dns[3] = 8;
-
-    // DHCP mode
     g_network_info.dhcp = NETINFO_STATIC;
+
+    printf("Initialized g_network_info with static values.\r\n");
 }
 
 /**
- * @brief Updates the W5500 chip with provided network info.
+ * @brief Apply the provided network settings to the W5500 chip
  */
 void eth_config_set_netinfo(const wiz_NetInfo* net_info) {
+
     memcpy(&g_network_info, net_info, sizeof(wiz_NetInfo));
+
+    // Apply all at once
     wizchip_setnetinfo(&g_network_info);
+
+    HAL_Delay(10);  // Let it settle
+
+    wiz_NetInfo confirm;
+    wizchip_getnetinfo(&confirm);
+    printf("Confirmed from chip: IP %d.%d.%d.%d, MAC %02X:%02X:%02X:%02X:%02X:%02X\r\n",
+           confirm.ip[0], confirm.ip[1], confirm.ip[2], confirm.ip[3],
+           confirm.mac[0], confirm.mac[1], confirm.mac[2],
+           confirm.mac[3], confirm.mac[4], confirm.mac[5]);
 }
 
+
+
+
 /**
- * @brief Retrieves current network configuration from W5500 chip.
+ * @brief Read the current W5500 configuration from the chip
  */
 void eth_config_get_netinfo(wiz_NetInfo* net_info) {
-    wizchip_getnetinfo(&g_network_info);
-    memcpy(net_info, &g_network_info, sizeof(wiz_NetInfo));
+    wizchip_getnetinfo(net_info);
+    printf("Current W5500 Net Info: IP %d.%d.%d.%d, MAC %02X:%02X:%02X:%02X:%02X:%02X\r\n",
+           net_info->ip[0], net_info->ip[1], net_info->ip[2], net_info->ip[3],
+           net_info->mac[0], net_info->mac[1], net_info->mac[2],
+           net_info->mac[3], net_info->mac[4], net_info->mac[5]);
 }

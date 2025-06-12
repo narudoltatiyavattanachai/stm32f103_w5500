@@ -78,14 +78,17 @@ static void on_dhcp_conflict(void)
 
 bool w5500_dhcp_init(void)
 {
+    printf("Initializing DHCP...\r\n");
     if (dhcp_socket >= W5500_MAX_SOCKET) {
         DEBUG_PRINT("[DHCP] Error: Invalid socket number %d\r\n", dhcp_socket);
         return false;
     }
 
     // DHCP_init is void and cannot fail, so we don't check its return value
+    printf("Calling DHCP_init...\r\n");
     DHCP_init(dhcp_socket, dhcp_buffer);
 
+    printf("Calling reg_dhcp_cbfunc\r\n");
     reg_dhcp_cbfunc(on_dhcp_assigned, on_dhcp_assigned, on_dhcp_conflict);
     ip_assigned_flag = false;
     dhcp_retry = 0;
@@ -96,12 +99,15 @@ bool w5500_dhcp_init(void)
 
 void w5500_dhcp_task1000ms(void)
 {
+	printf("Calling w5500_dhcp_task1000ms\r\n");
     DHCP_time_handler();
 }
+
 
 uint8_t w5500_dhcp_task10ms(void)
 {
     uint8_t dhcp_state = DHCP_run();
+    printf("Calling w5500_dhcp_task10ms\r\n");
 
     if (!ip_assigned_flag) {
         switch (dhcp_state) {
@@ -111,9 +117,19 @@ uint8_t w5500_dhcp_task10ms(void)
                 break;
 
             case DHCP_FAILED:
-                if (++dhcp_retry > DHCP_MAX_RETRY_COUNT) {
-                    DEBUG_PRINT("[DHCP] Max retry exceeded.\r\n");
+                dhcp_retry++;
+                DEBUG_PRINT("[DHCP] Retry %d/%d\r\n", dhcp_retry, DHCP_MAX_RETRY_COUNT);
+
+                if (dhcp_retry > DHCP_MAX_RETRY_COUNT) {
+                    DEBUG_PRINT("[DHCP] Max retry exceeded. Falling back to static IP.\r\n");
                     w5500_dhcp_stop();
+
+                    // Apply static config fallback
+                    eth_config_init_static();  // Load from eth_config.h
+                    eth_config_set_netinfo(&g_network_info);  // Apply to W5500
+                    printf("[DHCP] Static IP fallback applied.\r\n");
+
+                    ip_assigned_flag = true;  // Stop retry attempts
                 }
                 break;
         }
@@ -121,6 +137,7 @@ uint8_t w5500_dhcp_task10ms(void)
 
     return dhcp_state;
 }
+
 
 void w5500_dhcp_stop(void)
 {

@@ -236,7 +236,7 @@ size_t uros_transport_read(struct uxrCustomTransport* transport, uint8_t* buf, s
         }
         
         /* Small delay to prevent hammering CPU */
-        osDelay(1);
+        HAL_Delay(1);
     }
     
     /* Timeout occurred, no data received */

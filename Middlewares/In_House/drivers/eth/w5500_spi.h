@@ -14,8 +14,8 @@
  * @date 2025-06-09
  */
 
-#ifndef _W5500_H_
-#define _W5500_H_
+#ifndef _W5500_SPI_H_
+#define _W5500_SPI_H_
 
 #include <stdint.h> // For uint8_t
 #include <stdbool.h>
@@ -95,7 +95,7 @@ void w5500_spi_write(uint8_t byte);
  * @param gateway Gateway IP address (4 bytes)
  * @return true if initialization successful, false otherwise
  */
- void w5500_init(void);
+ void w5500_spi_init(void);
 
 /**
  * @brief Restart the W5500 hardware
@@ -105,6 +105,15 @@ void w5500_spi_write(uint8_t byte);
  * 
  * @return true if reset was successful
  */
-void w5500_reset(void);
+void w5500_spi_reset(void);
 
-#endif /* _W5500_H_ */
+
+/**
+ * @brief Read the W5500 VERSIONR register (should return 0x04)
+ * @return 8-bit version register value (0x04 for W5500)
+ */
+uint8_t w5500_manual_read_version(void);
+
+void w5500_manual_test_write_config(void);
+
+#endif /* _W5500_SPI_H_ */

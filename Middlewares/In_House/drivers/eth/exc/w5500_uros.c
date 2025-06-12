@@ -142,7 +142,7 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
         
         /* Small delay to prevent CPU hammering */
         osMutexRelease(socket_mutex);
-        osDelay(10);
+        HAL_Delay(10);
         osMutexAcquire(socket_mutex, osWaitForever);
     }
     
@@ -185,7 +185,7 @@ bool uros_agent_discovery(uros_agent_info_t *agent)
         
         /* Small delay to prevent CPU hammering */
         osMutexRelease(socket_mutex);
-        osDelay(10);
+        HAL_Delay(10);
         osMutexAcquire(socket_mutex, osWaitForever);
     }
 
@@ -300,7 +300,7 @@ bool uros_reconnect(uros_agent_info_t *agent)
         
         /* Apply exponential backoff delay */
         DEBUG_PRINT("Reconnect: Failed, retrying in %d ms\r\n", retry_delay);
-        osDelay(retry_delay);
+        HAL_Delay(retry_delay);
         retry_delay *= ETH_CONFIG_UROS_RETRY_FACTOR;
         
         /* Cap the maximum retry delay */

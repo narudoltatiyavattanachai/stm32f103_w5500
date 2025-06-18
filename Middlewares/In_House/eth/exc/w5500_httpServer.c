@@ -12,7 +12,7 @@
 #include <string.h>
 
 /* Include the third-party HTTP server library */
-#include "../Third_Party/ioLibrary_Driver_v3.2.0/Internet/httpServer/httpServer.h"
+#include "httpServer.h"
 
 /* Enable debug prints if defined */
 #ifdef W5500_DEBUG

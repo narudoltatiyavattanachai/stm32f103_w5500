@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "w5500_uros.h"
 #include "w5500_socket.h"
-#include <uxr/client/transport.h>
+#include <uxr/cltransport.h>
 
 /* Debug output control */
 #ifdef W5500_DEBUG

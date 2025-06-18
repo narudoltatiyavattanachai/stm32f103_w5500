@@ -1,6 +1,4 @@
 #include "eth_config.h"
-#include <string.h>  // For memcpy
-#include <stdio.h>   // For printf
 
 // Global network configuration structure
 wiz_NetInfo g_network_info;
@@ -25,19 +23,20 @@ void eth_config_init_static(void) {
  */
 void eth_config_set_netinfo(const wiz_NetInfo* net_info) {
 
-    memcpy(&g_network_info, net_info, sizeof(wiz_NetInfo));
+	setSHAR((uint8_t*)net_info->mac);
+	setSIPR((uint8_t*)net_info->ip);
+	setGAR((uint8_t*)net_info->gw);
+	setSUBR((uint8_t*)net_info->sn);
 
-    // Apply all at once
-    wizchip_setnetinfo(&g_network_info);
+    // Apply static network information all at once
+    //wizchip_setnetinfo(&g_network_info);
 
     HAL_Delay(10);  // Let it settle
 
-    wiz_NetInfo confirm;
-    wizchip_getnetinfo(&confirm);
-    printf("Confirmed from chip: IP %d.%d.%d.%d, MAC %02X:%02X:%02X:%02X:%02X:%02X\r\n",
-           confirm.ip[0], confirm.ip[1], confirm.ip[2], confirm.ip[3],
-           confirm.mac[0], confirm.mac[1], confirm.mac[2],
-           confirm.mac[3], confirm.mac[4], confirm.mac[5]);
+
+    // Read back static network information all at once
+    wiz_NetInfo current_info;
+    eth_config_get_netinfo(&current_info);
 }
 
 

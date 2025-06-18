@@ -22,7 +22,6 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
-#include "iwdg.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -30,6 +29,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticSemaphore_t osStaticSemaphoreDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -80,6 +80,22 @@ const osThreadAttr_t Task03_1000ms_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for initSemaphores */
+osSemaphoreId_t initSemaphoresHandle;
+osStaticSemaphoreDef_t initSemaphoresBuffer;
+const osSemaphoreAttr_t initSemaphores_attributes = {
+  .name = "initSemaphores",
+  .cb_mem = &initSemaphoresBuffer,
+  .cb_size = sizeof(initSemaphoresBuffer),
+};
+/* Definitions for tickSemaphores */
+osSemaphoreId_t tickSemaphoresHandle;
+osStaticSemaphoreDef_t tickSemaphoresBuffer;
+const osSemaphoreAttr_t tickSemaphores_attributes = {
+  .name = "tickSemaphores",
+  .cb_mem = &tickSemaphoresBuffer,
+  .cb_size = sizeof(tickSemaphoresBuffer),
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -107,6 +123,13 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of initSemaphores */
+  initSemaphoresHandle = osSemaphoreNew(1, 1, &initSemaphores_attributes);
+
+  /* creation of tickSemaphores */
+  tickSemaphoresHandle = osSemaphoreNew(1, 0, &tickSemaphores_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -158,7 +181,14 @@ void StartTask00(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	task00++;
+    osSemaphoreAcquire(initSemaphoresHandle, osWaitForever);
+
+    task00++;
+    printf("Task00: %lu\n", (unsigned long)task00);
+
+    w5500_spi_init();
+
+    osSemaphoreRelease(tickSemaphoresHandle);
     osDelay(1);
   }
   /* USER CODE END StartTask00 */
@@ -177,9 +207,12 @@ void StartTask01(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	osSemaphoreAcquire(tickSemaphoresHandle, osWaitForever);
 	task01++;
-	HAL_IWDG_Refresh(&hiwdg);
-    osDelay(10);
+	//printf("Task01: %lu\n", (unsigned long)task01);
+
+	osSemaphoreRelease(tickSemaphoresHandle);
+	osDelay(10);
   }
   /* USER CODE END StartTask01 */
 }
@@ -197,8 +230,13 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for(;;)
   {
+    osSemaphoreAcquire(tickSemaphoresHandle, osWaitForever);
 	task02++;
+    //printf("Task02: %lu\n", (unsigned long)task02);
+
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
+
+	osSemaphoreRelease(tickSemaphoresHandle);
 	osDelay(100);
   }
   /* USER CODE END StartTask02 */
@@ -217,9 +255,13 @@ void StartTask03(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	task03++;
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
-	printf("Task3_1s: %lu\n", (unsigned long)task03);
+	osSemaphoreAcquire(tickSemaphoresHandle, osWaitForever);
+    task03++;
+    printf("Task03: %lu\n", (unsigned long)task03);
+
+	//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
+
+	osSemaphoreRelease(tickSemaphoresHandle);
 	osDelay(1000);
   }
   /* USER CODE END StartTask03 */

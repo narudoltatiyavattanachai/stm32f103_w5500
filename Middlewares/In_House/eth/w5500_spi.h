@@ -17,13 +17,16 @@
 #ifndef _W5500_SPI_H_
 #define _W5500_SPI_H_
 
-#include <stdint.h> // For uint8_t
-#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
+#include <stdio.h>
+#include <cmsis_os2.h>
 #include "stm32f1xx_hal.h" // For HAL (if needed)
 
 /* WIZnet driver includes */
-#include "../../../Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "eth_config.h"
+#include "w5500.h"
+#include "wizchip_conf.h"
 
 /*============================================================================*/
 /*                         W5500 HARDWARE PIN DEFINITIONS                     */
@@ -68,6 +71,7 @@ void w5500_cs_deselect(void);
  * @param data Byte to send
  * @return Byte received
  */
+void w5500_spi_readburst(uint8_t* pBuf, uint16_t len);
 uint8_t w5500_spi_read(void);
 
 /**
@@ -75,7 +79,9 @@ uint8_t w5500_spi_read(void);
  * @param data Buffer containing data to send
  * @param len Number of bytes to transmit
  */
+void w5500_spi_writeburst(uint8_t* pBuf, uint16_t len);
 void w5500_spi_write(uint8_t byte);
+
 
 /**
  * @brief Initialize the W5500 hardware and network settings
@@ -108,12 +114,5 @@ void w5500_spi_write(uint8_t byte);
 void w5500_spi_reset(void);
 
 
-/**
- * @brief Read the W5500 VERSIONR register (should return 0x04)
- * @return 8-bit version register value (0x04 for W5500)
- */
-uint8_t w5500_manual_read_version(void);
-
-void w5500_manual_test_write_config(void);
 
 #endif /* _W5500_SPI_H_ */

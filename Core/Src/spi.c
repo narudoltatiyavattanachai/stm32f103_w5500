@@ -43,8 +43,8 @@ void MX_SPI2_Init(void)
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -54,6 +54,48 @@ void MX_SPI2_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI2_Init 2 */
+
+  printf("========== SPI2_Setting Start ===========\n");
+
+  // Enable GPIOB clock (APB2 for F1 series)
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  // Check GPIOB clock using APB2ENR + IOPBEN (not AHB2ENR)
+  printf("GPIOB clock: %s\n",
+    (RCC->APB2ENR & RCC_APB2ENR_IOPBEN) ? "ENABLED" : "NOT enabled");
+
+  // Read CR1 and CR2
+  uint16_t cr1 = SPI2->CR1;
+  uint16_t cr2 = SPI2->CR2;
+
+  // SPI mode: Master/Slave, Bidirectional/2-lines
+  printf("SPI2 Mode: %s, Direction: %s, DataSize: %s\n",
+         (cr1 & SPI_CR1_MSTR) ? "Master" : "Slave",
+         (cr1 & SPI_CR1_BIDIMODE) ? "1 line" : "2 lines",
+         (cr1 & SPI_CR1_DFF) ? "16 bits" : "8 bits");
+
+  // Clock Polarity & Phase, NSS control
+  printf("CPOL: %s, CPHA: %s, NSS: %s\n",
+         (cr1 & SPI_CR1_CPOL) ? "High" : "Low",
+         (cr1 & SPI_CR1_CPHA) ? "2nd Edge" : "1st Edge",
+         (cr1 & SPI_CR1_SSM) ? "Software" : "Hardware");
+
+  // Baudrate prescaler
+  printf("BaudRate Prescaler: %d, FirstBit: %s\n",
+         (int)(1 << (((cr1 & SPI_CR1_BR) >> SPI_CR1_BR_Pos) + 1)),
+         (cr1 & SPI_CR1_LSBFIRST) ? "LSB" : "MSB");
+
+  // SPI Mode: Full duplex or Receive only
+  printf("SPI Mode: %s\n",
+         (cr1 & SPI_CR1_RXONLY) ? "RECEIVE ONLY" : "FULL DUPLEX");
+
+  // Dump raw registers for reference
+  printf("CR1=0x%04X, CR2=0x%04X\n", cr1, cr2);
+
+  // Enable SPI
+  __HAL_SPI_ENABLE(&hspi2);
+
+  printf("========== SPI2_Setting Finish ==========\n");
 
   /* USER CODE END SPI2_Init 2 */
 
@@ -73,12 +115,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
     /**SPI2 GPIO Configuration
-    PB12     ------> SPI2_NSS
     PB13     ------> SPI2_SCK
     PB14     ------> SPI2_MISO
     PB15     ------> SPI2_MOSI
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_15;
+    GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -106,12 +147,11 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     __HAL_RCC_SPI2_CLK_DISABLE();
 
     /**SPI2 GPIO Configuration
-    PB12     ------> SPI2_NSS
     PB13     ------> SPI2_SCK
     PB14     ------> SPI2_MISO
     PB15     ------> SPI2_MOSI
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15);
 
   /* USER CODE BEGIN SPI2_MspDeInit 1 */
 

@@ -22,7 +22,6 @@
 #include "adc.h"
 #include "can.h"
 #include "i2c.h"
-#include "iwdg.h"
 #include "spi.h"
 #include "usart.h"
 #include "usb_device.h"
@@ -76,7 +75,6 @@ void MX_FREERTOS_Init(void);
 int main(void)
 {
 
-
   /* USER CODE BEGIN 1 */
   count++; // count = 1
   /* USER CODE END 1 */
@@ -105,39 +103,15 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI2_Init();
   MX_USART1_UART_Init();
-  //MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   count++; // count = 4
 
-  
 
-  // Initialize W5500 hardware
-  printf("Calling w5500_init()...\r\n");
-  w5500_spi_init();
-  w5500_manual_test_write_config();
-  HAL_Delay(100);
-  count++; // count = 5
-  
 
-  
-  // Initialize DHCP client
-  printf("Calling w5500_dhcp_init()...\r\n");
-  printf("Allocating socket number 0...\r\n");
-  //w5500_dhcp_init();
-  HAL_Delay(100);
-  count++; // count = 6
-  
 
+  // Initialize Watchdog
+  //MX_IWDG_Init();
   
-  // Initialize ICMP client
-  printf("Calling w5500_icmp_init()...\r\n");
-  printf("Allocating socket number 2...\r\n");
-  //w5500_icmp_init();
-  HAL_Delay(100);
-  count++; // count = 7
-
-  MX_IWDG_Init();
-  count++; // count = 8
 
   /* USER CODE END 2 */
 
@@ -157,7 +131,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	count++; // count = 8
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -176,11 +150,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;

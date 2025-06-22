@@ -25,7 +25,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "w5500_spi.h"
+#include "w5500_socket.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include "cmsis_os.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,6 +53,7 @@ uint32_t task00 = 0;
 uint32_t task01 = 0;
 uint32_t task02 = 0;
 uint32_t task03 = 0;
+static bool hw_init = false;
 
 /* USER CODE END Variables */
 /* Definitions for Task00_1ms */
@@ -152,12 +157,13 @@ void StartTask00(void *argument)
 {
   /* USER CODE BEGIN StartTask00 */
 
-
-    w5500_spi_init();
-
   /* Infinite loop */
   for(;;)
   {
+    if (!hw_init) {
+      w5500_spi_init();
+      hw_init = true;
+    }
 
     task00++;
     //printf("Task00: %lu\n", (unsigned long)task00);
@@ -231,6 +237,16 @@ void StartTask03(void *argument)
     printf("Task03: %lu\n", (unsigned long)task03);
 
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
+	
+	// Send UDP hello world message using centralized configuration
+	if (hw_init) {  // Only send if W5500 is initialized
+	    int32_t result = w5500_socket_send_udp_hello_world();
+	    if (result > 0) {
+	        printf("Task03: UDP hello world sent successfully (%ld bytes)\n", (long)result);
+	    } else {
+	        printf("Task03: UDP hello world failed with error %ld\n", (long)result);
+	    }
+	}
 
 	osDelay(1000);
   }

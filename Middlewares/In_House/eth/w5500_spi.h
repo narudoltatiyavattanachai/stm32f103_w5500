@@ -25,8 +25,8 @@
 
 /* WIZnet driver includes */
 #include "eth_config.h"
-#include "w5500.h"
-#include "wizchip_conf.h"
+#include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/W5500/w5500.h"
+#include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
 
 /*============================================================================*/
 /*                         W5500 HARDWARE PIN DEFINITIONS                     */
@@ -42,8 +42,7 @@
 #define W5500_CS_Pin         GPIO_PIN_12
 #define W5500_CS_GPIO_Port   GPIOB
 
-#define _WIZCHIP_            W5500
-#define _WIZCHIP_IO_MODE_    _WIZCHIP_IO_MODE_SPI_VDM_
+/* Note: _WIZCHIP_ and _WIZCHIP_IO_MODE_ are now centralized in eth_config.h */
 
 
 

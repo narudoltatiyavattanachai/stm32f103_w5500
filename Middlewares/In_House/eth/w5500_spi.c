@@ -181,7 +181,11 @@ void w5500_spi_init(void)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     printf("Initializing socket buffers...\n");
-    uint8_t rx_tx_buff_sizes[] = {2, 2, 2, 2, 2, 2, 2, 2};
+    // Use centralized buffer configuration from eth_config.h
+    uint8_t rx_tx_buff_sizes[ETH_CONFIG_TOTAL_BUFFERS];
+    for (int i = 0; i < ETH_CONFIG_TOTAL_BUFFERS; i++) {
+        rx_tx_buff_sizes[i] = ETH_CONFIG_BUFFER_SIZE_KB;
+    }
     if (wizchip_init(rx_tx_buff_sizes, rx_tx_buff_sizes) != 0)
     {
         printf("ERROR: wizchip_init() failed! Aborting.\n");

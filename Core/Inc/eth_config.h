@@ -14,9 +14,9 @@
 
 // === Static const array definitions (usable in C code) ===
 static const uint8_t ETH_CONFIG_MAC[6]     = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-static const uint8_t ETH_CONFIG_IP[4]      = {192, 168, 68, 151};
+static const uint8_t ETH_CONFIG_IP[4]      = {192, 168, 100, 151};
 static const uint8_t ETH_CONFIG_SUBNET[4]  = {255, 255, 255, 0};
-static const uint8_t ETH_CONFIG_GATEWAY[4] = {192, 168, 68, 1};
+static const uint8_t ETH_CONFIG_GATEWAY[4] = {192, 168, 100, 1};
 static const uint8_t ETH_CONFIG_DNS[4]     = {8, 8, 8, 8};
 
 // === Global configuration structure ===

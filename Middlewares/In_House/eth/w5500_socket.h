@@ -74,22 +74,6 @@
   */
  int8_t w5500_socket_get_service_number(const char* service);
 
- /**
-  * @brief Send TCP message using centralized socket configuration
-  * @param service Service name (e.g., "tcp")
-  * @param dest_ip Destination IP address
-  * @param dest_port Destination port
-  * @param message Message to send
-  * @param len Length of message
-  * @return Number of bytes sent or error code
-  */
- int32_t w5500_socket_send_tcp_message(const char* service, const uint8_t* dest_ip, uint16_t dest_port, const uint8_t* message, uint16_t len);
-
- /**
-  * @brief Send UDP hello world message using centralized configuration from eth_config.h
-  * @return Number of bytes sent or error code
-  */
- int32_t w5500_socket_send_udp_hello_world(void);
 
  /*============================================================================*/
  /* SOCKET MANAGEMENT */

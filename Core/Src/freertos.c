@@ -26,7 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "w5500_spi.h"
-#include "w5500_socket.h"
+#include "hello_world.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "cmsis_os.h"
@@ -240,7 +240,7 @@ void StartTask03(void *argument)
 	
 	// Send UDP hello world message using centralized configuration
 	if (hw_init) {  // Only send if W5500 is initialized
-	    int32_t result = w5500_socket_send_udp_hello_world();
+	    int32_t result = hello_world_send_udp();
 	    if (result > 0) {
 	        printf("Task03: UDP sent(%ld bytes)\n", (long)result);
 	    } else {

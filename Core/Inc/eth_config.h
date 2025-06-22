@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "stm32f1xx_hal.h"
-#include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "wizchip_conf.h"
 
 // === WIZnet ioLibrary Configuration ===
 #define _WIZCHIP_                W5500

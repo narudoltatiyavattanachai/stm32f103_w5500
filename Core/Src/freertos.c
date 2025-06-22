@@ -242,9 +242,9 @@ void StartTask03(void *argument)
 	if (hw_init) {  // Only send if W5500 is initialized
 	    int32_t result = w5500_socket_send_udp_hello_world();
 	    if (result > 0) {
-	        printf("Task03: UDP hello world sent successfully (%ld bytes)\n", (long)result);
+	        printf("Task03: UDP sent(%ld bytes)\n", (long)result);
 	    } else {
-	        printf("Task03: UDP hello world failed with error %ld\n", (long)result);
+	        printf("Task03: UDP error %ld\n", (long)result);
 	    }
 	}
 

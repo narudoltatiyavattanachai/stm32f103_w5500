@@ -54,7 +54,7 @@ extern SPI_HandleTypeDef hspi2;
 void w5500_cs_select(void)
 {
     HAL_GPIO_WritePin(W5500_CS_GPIO_Port, W5500_CS_Pin, GPIO_PIN_RESET);
-    printf("After SELECT: %d\n", HAL_GPIO_ReadPin(W5500_CS_GPIO_Port, W5500_CS_Pin));
+    //printf("After SELECT: %d\n", HAL_GPIO_ReadPin(W5500_CS_GPIO_Port, W5500_CS_Pin));
 }
 
 /**
@@ -64,7 +64,7 @@ void w5500_cs_select(void)
 void w5500_cs_deselect(void)
 {
     HAL_GPIO_WritePin(W5500_CS_GPIO_Port, W5500_CS_Pin, GPIO_PIN_SET);
-    printf("After DESELECT: %d\n", HAL_GPIO_ReadPin(W5500_CS_GPIO_Port, W5500_CS_Pin));
+    //printf("After DESELECT: %d\n", HAL_GPIO_ReadPin(W5500_CS_GPIO_Port, W5500_CS_Pin));
 }
 
 

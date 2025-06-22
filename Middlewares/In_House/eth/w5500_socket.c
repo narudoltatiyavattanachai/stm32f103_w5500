@@ -12,9 +12,9 @@
  #include "w5500_socket.h"
  #include "w5500_spi.h"
  #include "eth_config.h"
- #include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
- #include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
- #include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/W5500/w5500.h"
+ #include "wizchip_conf.h"
+ #include "socket.h"
+ #include "w5500.h"
  #include <stdio.h>
  #include <string.h>
 

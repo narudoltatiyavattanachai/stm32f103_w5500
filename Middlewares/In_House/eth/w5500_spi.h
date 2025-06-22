@@ -25,8 +25,8 @@
 
 /* WIZnet driver includes */
 #include "eth_config.h"
-#include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/W5500/w5500.h"
-#include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
+#include "w5500.h"
+#include "wizchip_conf.h"
 
 /*============================================================================*/
 /*                         W5500 HARDWARE PIN DEFINITIONS                     */

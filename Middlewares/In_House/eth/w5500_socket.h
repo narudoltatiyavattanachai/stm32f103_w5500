@@ -18,8 +18,8 @@
  #include <stdio.h>
  #include <string.h>
  
- #include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/wizchip_conf.h"
- #include "Middlewares/Third_Party/ioLibrary_Driver_v3.2.0/Ethernet/socket.h"
+ #include "wizchip_conf.h"
+ #include "socket.h"
 
 /*============================================================================*/
 /*                         DEBUG CONFIGURATION                               */
